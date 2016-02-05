@@ -25,7 +25,7 @@ public:
 		}
 
 		bool operator!=(const Sinus & rhs) const {
-			return (freq != rhs.freq) || (phase != rhs.phase) || (amplitude == rhs.amplitude);
+			return (freq != rhs.freq) || (phase != rhs.phase) || (amplitude != rhs.amplitude);
 		}
 	};
 
@@ -39,16 +39,31 @@ public:
 
 		sines = new Sinus[count];
 
-		for (int i = 0; i < 3 * count * sizeof(double); i++) {
-			std::cout << (int) rawData[i] << std::endl;
-		}
+		memcpy(sines, rawData, sizeof(Sinus) * count);
 
-
-		for(int i = 0; i < count; i++) {
-			sines[i] = Sinus(rawData); // new sinus from rawdata
-			rawData += sizeof(Sinus);  // increment pointer to rawdata,
+		//for(int i = 0; i < count; i++) {
+		//	sines[i] = Sinus(rawData); // new sinus from rawdata
+		//	rawData += sizeof(Sinus);  // increment pointer to rawdata,
 			                           // so that it points to the data of the next sinus
+		//}
+	}
+
+    FFTPacket(const FFTPacket& other) :
+		sines(new Sinus[other.sineCount]), sineCount(other.sineCount) {
+		std::memcpy(sines, other.sines, sineCount * sizeof(Sinus));
+	}
+
+    FFTPacket& operator=(const FFTPacket& other) {
+		if (this != &other) {
+			if(sineCount > 0)
+				delete[] sines;
+
+			sines = new Sinus[other.sineCount];
+			std::memcpy(sines, other.sines, other.sineCount * sizeof(Sinus));
+			sineCount = other.sineCount;
 		}
+
+		return *this;
 	}
 
 	bool operator==(const FFTPacket & rhs) const {

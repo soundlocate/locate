@@ -25,6 +25,8 @@ public:
 		std::size_t received_size;
 	    server->receive(&numMic, sizeof(unsigned int), received_size);
 		assert(received_size == sizeof(unsigned int));
+
+		++(*this);
 	}
 
 	unsigned int numMics() {
