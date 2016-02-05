@@ -5,7 +5,7 @@
 #include <cstring>
 #include <SFML/Network.hpp>
 
-class FFTStream : public std::iterator<std::input_iterator_tag, FFTPacket>{
+class FFTStream : public std::iterator<std::input_iterator_tag, FFTPacket> {
 public:
 	FFTStream(const char * ip, unsigned short port) {
 		assert(std::strlen(ip) > 0);
@@ -19,32 +19,79 @@ public:
 			//NOOP, lets just wait until the server comes up
 		}
 
+		status = connected;
+
 		// Connected, now lets get the mic count
 		std::size_t received_size;
-	    server->receive(&numMics, sizeof(unsigned int), received_size);
+	    server->receive(&numMic, sizeof(unsigned int), received_size);
 		assert(received_size == sizeof(unsigned int));
 	}
 
 	unsigned int numMics() {
-		return numMics;
+		return numMic;
 	};
 
 	FFTStream& operator++() {
 		std::size_t received_size;
-		std::size_t to_receive_size = count * 3 * sizeof(double);
+		std::size_t to_receive_size = numMic * 3 * sizeof(double);
 
+		// allocate buffer
 		char * rawData = new char[to_receive_size];
 
-		server->receive(rawData, to_receive_size, received_size);
+		// receive one packet
+		if(server->receive(rawData, to_receive_size, received_size) == sf::Socket::Disconnected) {
+			status = eos; // the server closed
+		}
 		assert(received_size == to_receive_size);
+
+		// convert raw data to packet
+		currentPacket = FFTPacket(rawData, numMic);
+
+		// deallocate buffer
+		delete[] rawData;
 
 		return *this;
 	}
 
+	bool operator==(const FFTStream& rhs) {
+		if(rhs.status == status)
+			return currentPacket == rhs.currentPacket;
+		else
+			return rhs.status == status;
+	}
+
+	bool operator!=(const FFTStream& rhs) {
+		if(rhs.status == status)
+			return currentPacket != rhs.currentPacket;
+		else
+			return rhs.status != status;
+	}
+
+    FFTPacket& operator*() {
+		return currentPacket;
+	}
+
+    FFTStream begin() {
+		return *this;
+	}
+
+    FFTStream end() {
+		return FFTStream(eos);
+	}
+
+	enum FFTSteamStatus {
+		disconnected,
+		connected,
+		eos
+	};
+
 private:
+	FFTStream(FFTSteamStatus newStatus) : status(newStatus), currentPacket() {}
+
 	sf::TcpSocket * server;
-	unsigned int numMics;
+	unsigned int numMic;
 	FFTPacket currentPacket;
+	FFTSteamStatus status = disconnected;
 };
 
 #endif
