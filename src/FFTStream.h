@@ -14,6 +14,9 @@ public:
 		server = new sf::TcpSocket;
 		server->setBlocking(true);
 
+		std::cout << ip << std::endl;
+		std::cout << port << std::endl;
+
 		// Connect to the server
 		while(server->connect(sf::IpAddress(ip), port) != sf::Socket::Done) {
 			//NOOP, lets just wait until the server comes up
