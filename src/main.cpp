@@ -11,15 +11,22 @@
 #include "PositionClient.h"
 
 int main(int argc, char ** argv) {
-	double distBetween = 1;
+	double distBetween = 0.28;
 
 	std::array<Microfone, 4> mics = {
 			Microfone(0.0, 0.0, 0.0),
 			Microfone(0.0, distBetween , 0.0),
 			Microfone(sin((60.0 / 180.0) * math::PI) * distBetween , distBetween  / 2, 0.0),
-//			Microfone(1, 0, 0.66 * (1.0 / 3.0) * sqrt(6.0) * distBetween)
 			Microfone(tan((30.0 / 180.0) * math::PI) * (distBetween / 2.0), distBetween  / 2.0, (1.0 / 3.0) * sqrt(6.0) * distBetween)
 	};
+
+	std::cout << "Microfones: " << std::endl << "[" << std::endl;
+
+	for(int i = 0; i < 4; i++) {
+		std::cout << mics[i].pos << "," << std::endl;
+	}
+
+	std::cout << "]" << std::endl;
 
 	Locator3D<4> locator(mics);
 	FFTStream stream(argv[1], std::atoi(argv[2]));
@@ -30,6 +37,9 @@ int main(int argc, char ** argv) {
 	std::vector<v3> positionBuffer;
 
 	for(auto packet : stream) {
+		if(packet.sines[0].freq < 300 || packet.sines[0].freq > 1200)
+			continue;
+
 		pos = locator.locate(packet);
 		positionBuffer.push_back(pos);
 

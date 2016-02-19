@@ -9,7 +9,6 @@
 
 #include "/opt/intel/mkl/include/mkl_lapacke.h"
 
-
 #include "util/constant.h"
 #include "util/types.h"
 #include "Microfone.h"
@@ -143,6 +142,7 @@ public:
 private:
 	f64 deltaPhaseToDistance(f64 a, f64 b, f64 freq) {
 	    f64 diff = b - a;
+
 
 		if(diff < -math::PI) {
 			diff += 2 * math::PI;
