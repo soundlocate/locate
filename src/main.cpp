@@ -12,7 +12,7 @@
 #include "WebsocketPositionClient.h"
 
 int main(int argc, char ** argv) {
-	double distBetween = 1;
+	double distBetween = 0.56;
 
 	std::array<Microfone, 4> mics = {
 			Microfone(0.0, 0.0, 0.0),
