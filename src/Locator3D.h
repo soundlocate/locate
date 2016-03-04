@@ -111,7 +111,7 @@ public:
 */
 
 			// solve least squares
-		    LAPACKE_dgelsd(LAPACK_ROW_MAJOR, numMics, 4, 1, matrix, numMics, target, 1, singular, -1, &rank);
+		    LAPACKE_dgelsd(LAPACK_ROW_MAJOR, numMics - 1, 3, 1, matrix, numMics - 1, target, 3, singular, -1, &rank);
 
 			// get dx, dy and dz
 			d = v3(target[0], target[1], target[2]);
@@ -166,12 +166,12 @@ private:
 	f64 maxFreq;
 
 	f64 f64Max = std::numeric_limits<f64>::max();
-	f64 target[numMics];
-	f64 singular[numMics];
-	f64 matrix[4 * numMics];
+	f64 target[numMics - 1];
+	f64 singular[numMics - 1];
+	f64 matrix[3 * numMics];
 	i32 rank;
-	f64 x[numMics];
-	f64 r[numMics];
+	f64 x[numMics - 1];
+	f64 r[numMics - 1];
 };
 
 #endif
