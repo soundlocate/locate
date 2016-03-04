@@ -69,7 +69,7 @@ public:
 		// calculate path differences
 		for(u64 i = 0; i < numMics; i++) {
 			x[i] = deltaPhaseToDistance(packet.sines[i].phase, packet.sines[0].phase, freq);
-//			std::cout << "x[" << i << "] = " << x[i] << std::endl;
+			std::cout << "x[" << i << "] = " << x[i] << std::endl;
 		}
 
 		// test values (2, 2, 2)
@@ -119,6 +119,8 @@ public:
 			// iterate position
 			pos += d;
 
+			std::cout << d << std::endl;
+
 //			std::cout << "d: " << d << std::endl;
 //			std::cout << "pos: " << pos << std::endl;
 //			std::cout << "nitr: " << nitr << std::endl;
@@ -164,8 +166,8 @@ private:
 	f64 maxFreq;
 
 	f64 f64Max = std::numeric_limits<f64>::max();
-	f64 target[4];
-	f64 singular[4];
+	f64 target[numMics];
+	f64 singular[numMics];
 	f64 matrix[4 * numMics];
 	i32 rank;
 	f64 x[numMics];

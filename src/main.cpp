@@ -11,53 +11,57 @@
 #include "PositionClient.h"
 #include "WebsocketPositionClient.h"
 
+#define MICCOUNT 5
+
 int main(int argc, char ** argv) {
 	double distBetween = 0.28*2;
 
 	double dx = 0, dy = 0, dz = 0;
 
-	double pos[4 * 3] = {
-		0, 0, 0,
-		0, 1, 0,
-		sin(M_PI * 0.333333), 0.5, 0,
-		0.5 * tan(M_PI * 0.161616), 0.5, 0.333333 * sqrt(6)
-	};
+	{
+		double pos[4 * 3] = {
+			0, 0, 0,
+			0, 1, 0,
+			sin(M_PI * 0.333333), 0.5, 0,
+			0.5 * tan(M_PI * 0.161616), 0.5, 0.333333 * sqrt(6)
+		};
 
-	for(int i = 0; i < 4; i++) {
-		dx += pos[3 * i] * distBetween;
-		dy += pos[3 * i + 1] * distBetween;
-		dz += pos[3 * i + 2] * distBetween;
+		for(int i = 0; i < 4; i++) {
+			dx += pos[3 * i] * distBetween;
+			dy += pos[3 * i + 1] * distBetween;
+			dz += pos[3 * i + 2] * distBetween;
+		}
+
+		dx /= 4;
+		dy /= 4;
+		dz /= 4;
+
+		double tx = 0, ty = 0, tz = 0;
+
+		for(int i = 0; i < 4; i++) {
+			tx += pos[3 * i] * distBetween * 0.5;
+			ty += pos[3 * i + 1] * distBetween * 0.5;
+			tz += pos[3 * i + 2] * distBetween * 0.5;
+		}
+
+		tx /= 4;
+		ty /= 4;
+		tz /= 4;
+
+		dx -= tx;
+		dy -= ty;
+		dz -= tz;
 	}
 
-	dx /= 4;
-	dy /= 4;
-	dz /= 4;
-
-	double tx = 0, ty = 0, tz = 0;
-
-	for(int i = 0; i < 4; i++) {
-		tx += pos[3 * i] * distBetween * 0.5;
-		ty += pos[3 * i + 1] * distBetween * 0.5;
-		tz += pos[3 * i + 2] * distBetween * 0.5;
-	}
-
-	tx /= 4;
-	ty /= 4;
-	tz /= 4;
-
-	dx -= tx;
-	dy -= ty;
-	dz -= tz;
-
-	std::array<Microfone, 8> mics = {
+	std::array<Microfone, MICCOUNT> mics = {
 		Microfone(0.0, 0.0, 0.0),
 		Microfone(0.0, distBetween , 0.0),
 		Microfone(sin((60.0 / 180.0) * math::PI) * distBetween , distBetween  / 2, 0.0),
 		Microfone(tan((30.0 / 180.0) * math::PI) * (distBetween / 2.0), distBetween  / 2.0, (1.0 / 3.0) * sqrt(6.0) * distBetween),
 		Microfone(dx, dy, dz),
-		Microfone(dx, dy  + distBetween * 0.5, dz),
-		Microfone(dx + sin((60.0 / 180.0) * math::PI) * distBetween * 0.5, dy + distBetween  / 4, dz),
-		Microfone(dx + tan((30.0 / 180.0) * math::PI) * (distBetween / 4.0), dy + distBetween  / 4.0, dz - (1.0 / 3.0) * sqrt(6.0) * distBetween * 0.5),
+//		Microfone(dx, dy  + distBetween * 0.5, dz),
+//		Microfone(dx + sin((60.0 / 180.0) * math::PI) * distBetween * 0.5, dy + distBetween  / 4, dz),
+//		Microfone(dx + tan((30.0 / 180.0) * math::PI) * (distBetween / 4.0), dy + distBetween  / 4.0, dz - (1.0 / 3.0) * sqrt(6.0) * distBetween * 0.5),
 	};
 
 	std::cout << "Microfones: " << std::endl << "[" << std::endl;
@@ -68,7 +72,7 @@ int main(int argc, char ** argv) {
 
 	std::cout << "]" << std::endl;
 
-	Locator3D<8> locator(mics);
+	Locator3D<MICCOUNT> locator(mics);
 	FFTStream stream(argv[1], std::atoi(argv[2]));
 	PositionClient posClient(argv[3], std::atoi(argv[4]));
 	WebsocketPositionClient wclient(std::atoi(argv[5]));
