@@ -11,7 +11,7 @@
 #include "PositionClient.h"
 #include "WebsocketPositionClient.h"
 
-#define MICCOUNT 5
+#define MICCOUNT 4
 
 int main(int argc, char ** argv) {
 	double distBetween = 0.28*2;
@@ -58,7 +58,7 @@ int main(int argc, char ** argv) {
 		Microfone(0.0, distBetween , 0.0),
 		Microfone(sin((60.0 / 180.0) * math::PI) * distBetween , distBetween  / 2, 0.0),
 		Microfone(tan((30.0 / 180.0) * math::PI) * (distBetween / 2.0), distBetween  / 2.0, (1.0 / 3.0) * sqrt(6.0) * distBetween),
-		Microfone(dx, dy, dz),
+//		Microfone(dx, dy, dz),
 //		Microfone(dx, dy  + distBetween * 0.5, dz),
 //		Microfone(dx + sin((60.0 / 180.0) * math::PI) * distBetween * 0.5, dy + distBetween  / 4, dz),
 //		Microfone(dx + tan((30.0 / 180.0) * math::PI) * (distBetween / 4.0), dy + distBetween  / 4.0, dz - (1.0 / 3.0) * sqrt(6.0) * distBetween * 0.5),
