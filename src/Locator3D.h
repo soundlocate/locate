@@ -52,7 +52,7 @@ public:
 		v3 pos;
 	    u64 nitr = 0;
 
-//		std::cout << "freq: " << freq << std::endl;
+		std::cout << "freq: " << freq << std::endl;
 
 		assert(packet.getSineCount() == numMics);
 
@@ -69,7 +69,7 @@ public:
 		// calculate path differences
 		for(u64 i = 0; i < numMics; i++) {
 			x[i] = deltaPhaseToDistance(packet.sines[i].phase, packet.sines[0].phase, freq);
-			std::cout << "x[" << i << "] = " << x[i] << std::endl;
+//			std::cout << "x[" << i << "] = " << x[i] << std::endl;
 		}
 
 		// test values (2, 2, 2)
@@ -88,16 +88,15 @@ public:
 			}
 
 			// fill the matrix
-			for (int i = 0; i < numMics; i++) {
-				matrix[4 * i + 0] = (pos.x - mics[i].pos.x) / r[i];
-				matrix[4 * i + 1] = (pos.y - mics[i].pos.y) / r[i];
-				matrix[4 * i + 2] = (pos.z - mics[i].pos.z) / r[i];
-				matrix[4 * i + 3] = -1;
-			}
+			for (int i = 0; i < numMics - 1; i++) {
+				matrix[3 * i + 0] = ((pos.x - mics[i + 1].pos.x) / r[i + 1]) - ((pos.x - mics[0].pos.x) / r[0]);
+				matrix[3 * i + 1] = ((pos.y - mics[i + 1].pos.y) / r[i + 1]) - ((pos.y - mics[0].pos.y) / r[0]);
+				matrix[3 * i + 2] = ((pos.z - mics[i + 1].pos.z) / r[i + 1]) - ((pos.z - mics[0].pos.z) / r[0]);
+		    }
 
 			// fill the vector
-			for (int i = 0; i < numMics; i++) {
-				target[i] = x[i] - r[i];
+			for (int i = 0; i < numMics - 1; i++) {
+				target[i] = x[i + 1] - r[i + 1] + r[0];
 			}
 
 /* Debug output
@@ -111,7 +110,7 @@ public:
 */
 
 			// solve least squares
-		    LAPACKE_dgelsd(LAPACK_ROW_MAJOR, numMics - 1, 3, 1, matrix, numMics - 1, target, 3, singular, -1, &rank);
+		    LAPACKE_dgelsd(LAPACK_ROW_MAJOR, numMics - 1, 3, 1, matrix, 3, target, 1, singular, -1, &rank);
 
 			// get dx, dy and dz
 			d = v3(target[0], target[1], target[2]);
@@ -137,7 +136,11 @@ public:
 		}
 
 		// save this position as starting point for next time
-		lastPositions[freq] = pos;
+		//lastPositions[freq] = pos;
+
+		lastPositions[freq] = center;
+
+		std::cout << pos << std::endl;
 
 		return pos;
 	};
@@ -158,7 +161,7 @@ private:
 		return diff;
 	}
 
-	f64 accuracy = 0.001;
+	f64 accuracy = 0.01;
 
 	std::array<Microfone, numMics> mics;
 	std::unordered_map<f64, v3> lastPositions;
@@ -170,8 +173,8 @@ private:
 	f64 singular[numMics - 1];
 	f64 matrix[3 * numMics];
 	i32 rank;
-	f64 x[numMics - 1];
-	f64 r[numMics - 1];
+	f64 x[numMics];
+	f64 r[numMics];
 };
 
 #endif

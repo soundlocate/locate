@@ -14,54 +14,17 @@
 #define MICCOUNT 4
 
 int main(int argc, char ** argv) {
-	double distBetween = 0.28*2;
-
-	double dx = 0, dy = 0, dz = 0;
-
-	{
-		double pos[4 * 3] = {
-			0, 0, 0,
-			0, 1, 0,
-			sin(M_PI * 0.333333), 0.5, 0,
-			0.5 * tan(M_PI * 0.161616), 0.5, 0.333333 * sqrt(6)
-		};
-
-		for(int i = 0; i < 4; i++) {
-			dx += pos[3 * i] * distBetween;
-			dy += pos[3 * i + 1] * distBetween;
-			dz += pos[3 * i + 2] * distBetween;
-		}
-
-		dx /= 4;
-		dy /= 4;
-		dz /= 4;
-
-		double tx = 0, ty = 0, tz = 0;
-
-		for(int i = 0; i < 4; i++) {
-			tx += pos[3 * i] * distBetween * 0.5;
-			ty += pos[3 * i + 1] * distBetween * 0.5;
-			tz += pos[3 * i + 2] * distBetween * 0.5;
-		}
-
-		tx /= 4;
-		ty /= 4;
-		tz /= 4;
-
-		dx -= tx;
-		dy -= ty;
-		dz -= tz;
-	}
+	double distBetween = 0.3253;
 
 	std::array<Microfone, MICCOUNT> mics = {
-		Microfone(0.0, 0.0, 0.0),
+//		Microfone(0.0, 0.0, 0.0),
 		Microfone(0.0, distBetween , 0.0),
-		Microfone(sin((60.0 / 180.0) * math::PI) * distBetween , distBetween  / 2, 0.0),
-		Microfone(tan((30.0 / 180.0) * math::PI) * (distBetween / 2.0), distBetween  / 2.0, (1.0 / 3.0) * sqrt(6.0) * distBetween),
-//		Microfone(dx, dy, dz),
-//		Microfone(dx, dy  + distBetween * 0.5, dz),
-//		Microfone(dx + sin((60.0 / 180.0) * math::PI) * distBetween * 0.5, dy + distBetween  / 4, dz),
-//		Microfone(dx + tan((30.0 / 180.0) * math::PI) * (distBetween / 4.0), dy + distBetween  / 4.0, dz - (1.0 / 3.0) * sqrt(6.0) * distBetween * 0.5),
+		Microfone(distBetween,0.0,0.0),
+//		Microfone(distBetween, distBetween, 0.0),
+		Microfone(0.0, 0.0, distBetween),
+//		Microfone(distBetween, 0.0, distBetween),
+//		Microfone(0.0, distBetween, distBetween),
+		Microfone(distBetween, distBetween, distBetween),
 	};
 
 	std::cout << "Microfones: " << std::endl << "[" << std::endl;
@@ -85,8 +48,13 @@ int main(int argc, char ** argv) {
 	int i = 0;
 
 	for(auto packet : stream) {
-//		if(packet.sines[0].freq < 300 || packet.sines[0].freq > 1200)
-//			continue;
+		if(packet.sines[0].freq < 100 || packet.sines[0].freq > 600)
+			continue;
+
+		packet.sines[0] = packet.sines[1];
+		packet.sines[1] = packet.sines[2];
+		packet.sines[2] = packet.sines[4];
+		packet.sines[3] = packet.sines[7];
 
 		pos = locator.locate(packet);
 		positionBuffer.push_back(pos);
