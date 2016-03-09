@@ -11,19 +11,19 @@
 #include "PositionClient.h"
 #include "WebsocketPositionClient.h"
 
-#define MICCOUNT 4
+#define MICCOUNT 8
 
 int main(int argc, char ** argv) {
 	double distBetween = 0.3253;
 
 	std::array<Microfone, MICCOUNT> mics = {
-//		Microfone(0.0, 0.0, 0.0),
+		Microfone(0.0, 0.0, 0.0),
 		Microfone(0.0, distBetween , 0.0),
 		Microfone(distBetween,0.0,0.0),
-//		Microfone(distBetween, distBetween, 0.0),
+		Microfone(distBetween, distBetween, 0.0),
 		Microfone(0.0, 0.0, distBetween),
-//		Microfone(distBetween, 0.0, distBetween),
-//		Microfone(0.0, distBetween, distBetween),
+		Microfone(distBetween, 0.0, distBetween),
+		Microfone(0.0, distBetween, distBetween),
 		Microfone(distBetween, distBetween, distBetween),
 	};
 
@@ -48,13 +48,8 @@ int main(int argc, char ** argv) {
 	int i = 0;
 
 	for(auto packet : stream) {
-		if(packet.sines[0].freq < 100 || packet.sines[0].freq > 600)
+		if(packet.sines[0].freq < 50 || packet.sines[0].freq > 600)
 			continue;
-
-		packet.sines[0] = packet.sines[1];
-		packet.sines[1] = packet.sines[2];
-		packet.sines[2] = packet.sines[4];
-		packet.sines[3] = packet.sines[7];
 
 		pos = locator.locate(packet);
 		positionBuffer.push_back(pos);
