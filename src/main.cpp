@@ -10,11 +10,14 @@
 #include "Microfone.h"
 #include "PositionClient.h"
 #include "WebsocketPositionClient.h"
+#include "CommandLineOptions.h"
 
 #define MICCOUNT 8
 
 int main(int argc, char ** argv) {
-	double distBetween = 0.3253;
+	double distBetween = 0.42;
+
+	CommandLineOptions options(argc, argv);
 
 	std::array<Microfone, MICCOUNT> mics = {
 		Microfone(0.0, 0.0, 0.0),
@@ -36,9 +39,9 @@ int main(int argc, char ** argv) {
 	std::cout << "]" << std::endl;
 
 	Locator3D<MICCOUNT> locator(mics);
-	FFTStream stream(argv[1], std::atoi(argv[2]));
-	PositionClient posClient(argv[3], std::atoi(argv[4]));
-	WebsocketPositionClient wclient(std::atoi(argv[5]));
+	FFTStream stream(options.fftIp().c_str(), options.fftPort());
+	PositionClient posClient(options.guiIp().c_str(), options.guiPort());
+	WebsocketPositionClient wclient(options.websocketPort());
 
 	v3 pos;
 

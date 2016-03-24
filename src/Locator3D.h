@@ -118,7 +118,7 @@ public:
 			// iterate position
 			pos += d;
 
-			std::cout << d << std::endl;
+//			std::cout << d << std::endl;
 
 //			std::cout << "d: " << d << std::endl;
 //			std::cout << "pos: " << pos << std::endl;
