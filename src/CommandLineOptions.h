@@ -81,19 +81,19 @@ private:
 			// parse the arguments
 			try {
 				switch (state->arg_num) {
-				case 1: /* fftip */
+				case 0: /* fftip */
 					arguments->fftIp = std::string(arg);
 					break;
-				case 2: /* fftport */
+				case 1: /* fftport */
 					arguments->fftPort = std::stoi(arg);
 					break;
-				case 3: /* guiop */
+				case 2 /* guiop */
 					arguments->guiIp = std::string(arg);
 					break;
-				case 4: /* guiport */
+				case 3: /* guiport */
 					arguments->guiPort = std::stoi(arg);
 					break;
-				case 5:
+				case 4:
 					arguments->websocketPort = std::stoi(arg);
 					break;
 				}
