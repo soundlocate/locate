@@ -87,7 +87,7 @@ private:
 				case 1: /* fftport */
 					arguments->fftPort = std::stoi(arg);
 					break;
-				case 2 /* guiop */
+				case 2: /* guiop */
 					arguments->guiIp = std::string(arg);
 					break;
 				case 3: /* guiport */
