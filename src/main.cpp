@@ -1,6 +1,10 @@
 #include <iostream>
 #include <unordered_set>
 #include <vector>
+#include <fstream>
+
+#include <cstdio>
+#include <ctime>
 
 #include "util/types.h"
 #include "util/constant.h"
@@ -30,6 +34,11 @@ int main(int argc, char ** argv) {
 		Microfone(distBetween, distBetween, distBetween),
 	};
 
+	char filename[256];
+	sprintf(filename, "%ld", time(0));
+
+	FILE * outFile = fopen(filename, "r");
+
 	std::cout << "Microfones: " << std::endl << "[" << std::endl;
 
 	for(int i = 0; i < 8; i++) {
@@ -56,6 +65,9 @@ int main(int argc, char ** argv) {
 
 		pos = locator.locate(packet);
 		positionBuffer.push_back(pos);
+
+		fprintf(outFile, "%ld, %lf, %lf, %lf, %lf\n", time(0), packet.sines[0].freq, pos.x, pos.y, pos.z);
+		fflush(outFile);
 
 		if(i % 5 == 0)
 			wclient.send(v4(packet.sines[0].freq, pos.x, pos.y, pos.z));
