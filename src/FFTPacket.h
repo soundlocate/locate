@@ -14,10 +14,11 @@ public:
 		Sinus() : freq(0), phase(0), amplitude(0) {}
 
 		Sinus(char * rawData) {
+			assert(rawData != nullptr);
+
 			memcpy(&freq, &rawData[0], sizeof(double));
 			memcpy(&phase, &rawData[sizeof(double)], sizeof(double));
 			memcpy(&amplitude, &rawData[2 * sizeof(double)], sizeof(double));
-			assert(rawData != nullptr);
 		}
 
 		bool operator==(const Sinus & rhs) const {
