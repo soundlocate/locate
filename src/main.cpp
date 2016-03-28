@@ -37,7 +37,7 @@ int main(int argc, char ** argv) {
 	char filename[256];
 	sprintf(filename, "%ld", time(0));
 
-	FILE * outFile = fopen(filename, "r");
+	FILE * outFile = fopen(filename, "w");
 
 	std::cout << "Microfones: " << std::endl << "[" << std::endl;
 
