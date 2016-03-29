@@ -67,32 +67,32 @@ int main(int argc, char ** argv) {
 	int i = 0;
 
 	for(auto packet : stream) {
-		// filter 50Hz and too high frequencies
-		if(packet.sines[0].freq < 50 || packet.sines[0].freq > 600)
-			continue;
-
 		pos = locator.locate(packet);
-		positionBuffer.push_back(pos);
 
-		// write position to log
-		log.log(packet.sines[0].freq, pos);
-
-		// send position to the websocket clients
-		wclient.send(v4(packet.sines[0].freq, pos.x, pos.y, pos.z));
-
-		// locate the shit and if it already exists send it out
-		if(!freqs.insert(packet.sines[0].freq).second) {
-			i++;
-
-            // delete last position, it will be duplicate
-			positionBuffer.erase(positionBuffer.end() - 1);
-
-			posClient.sendPositions(positionBuffer);
-		    freqs.clear();
-			positionBuffer.clear();
-
-			// add last position as first new position
+		// check for sensible values
+		if(pos.norm() < locate::maxDist) {
 			positionBuffer.push_back(pos);
+
+			// write position to log
+			log.log(packet.sines[0].freq, pos);
+
+			// send position to the websocket clients
+			wclient.send(v4(packet.sines[0].freq, pos.x, pos.y, pos.z));
+
+			// locate the shit and if it already exists send it out
+			if(!freqs.insert(packet.sines[0].freq).second) {
+				i++;
+
+				// delete last position, it will be duplicate
+				positionBuffer.erase(positionBuffer.end() - 1);
+
+				posClient.sendPositions(positionBuffer);
+				freqs.clear();
+				positionBuffer.clear();
+
+				// add last position as first new position
+				positionBuffer.push_back(pos);
+			}
 		}
 	}
 }

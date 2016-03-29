@@ -9,8 +9,6 @@
 #include <iostream>
 #include <cassert>
 
-#include "/opt/intel/mkl/include/mkl_lapacke.h"
-
 #include "util/constant.h"
 #include "util/types.h"
 #include "Microfone.h"
@@ -73,6 +71,8 @@ public:
 		for(auto a : algorithms) {
 			positions.push_back(a->locate(mics, packet, center));
 		}
+
+		// std::cout << packet.sines[0].freq << ":" << rater.bestPosition(positions, packet) << std::endl;
 
 		return rater.bestPosition(positions, packet);
 	};

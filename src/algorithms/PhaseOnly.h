@@ -4,7 +4,11 @@
 #include <unordered_map>
 #include <limits>
 #include <cassert>
+#include <iostream>
 
+#include "/opt/intel/mkl/include/mkl_lapacke.h"
+
+#include "../util/constant.h"
 #include "../util/math.h"
 #include "Algorithm.h"
 
@@ -68,16 +72,18 @@ public:
 			// it just does not converge
 			nitr++;
 			if(nitr > 50) {
-				std::cerr << "did not converge for freq: " << freq << std::endl;
+//				std::cerr << "did not converge for freq: " << freq << std::endl;
 
 				// lets not save that one, it is totally wrong, lets also reset the lastPosition to center
 				lastPositions[freq] = center;
 				return pos;
 			}
 		}
-
-		// save this position as starting point for next time
-		lastPositions[freq] = pos;
+		// save this position as starting point for next time (if sensible value)
+		if(pos.norm() < locate::maxDist)
+			lastPositions[freq] = pos;
+		else
+			lastPositions[freq] = center;
 
 		return pos;
 	}
