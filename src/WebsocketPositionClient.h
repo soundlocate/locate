@@ -19,8 +19,7 @@ using websocketpp::lib::bind;
 class WebsocketPositionClient {
 public:
 	WebsocketPositionClient(unsigned short port) {
-		assert(std::strlen(ip) > 0);
-		assert(port != 0);
+	    assert(port != 0);
 
 		server.clear_access_channels(websocketpp::log::alevel::all);
 		server.set_open_handler(bind(&WebsocketPositionClient::on_open, this, ::_1));
@@ -53,6 +52,8 @@ public:
 		for(auto hdl : connections) {
 			server.send(hdl, data_conv, 4 * sizeof(double), websocketpp::frame::opcode::binary);
 		}
+
+		return 0;
 	}
 
 private:

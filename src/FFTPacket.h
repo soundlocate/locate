@@ -71,7 +71,7 @@ public:
 		bool result = true;
 
 		if(sineCount == rhs.sineCount) {
-			for(int i = 0; i < sineCount; i++) {
+			for(unsigned int i = 0; i < sineCount; i++) {
 				result = result && (sines[i] == rhs.sines[i]);
 			}
 
@@ -85,7 +85,7 @@ public:
 		bool result = false;
 
 		if(sineCount == rhs.sineCount) {
-			for(int i = 0; i < sineCount; i++) {
+			for(unsigned int i = 0; i < sineCount; i++) {
 				result = result || (sines[i] != rhs.sines[i]);
 			}
 
@@ -98,7 +98,7 @@ public:
 	double meanAmplitude() {
 		double sum = 0;
 
-		for (int i = 0; i < sineCount; i++) {
+		for (unsigned int i = 0; i < sineCount; i++) {
 			sum += sines[i].amplitude;
 		}
 

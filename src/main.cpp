@@ -15,6 +15,9 @@
 #include "PositionClient.h"
 #include "WebsocketPositionClient.h"
 #include "CommandLineOptions.h"
+#include "Logger.h"
+#include "algorithms/Algorithm.h"
+#include "algorithms/PhaseOnly.h"
 
 #define MICCOUNT 8
 
@@ -23,7 +26,7 @@ int main(int argc, char ** argv) {
 
 	CommandLineOptions options(argc, argv);
 
-	std::array<Microfone, MICCOUNT> mics = {
+	std::vector<Microfone> mics = {
 		Microfone(0.0, 0.0, 0.0),
 		Microfone(0.0, distBetween , 0.0),
 		Microfone(distBetween,0.0,0.0),
@@ -37,9 +40,9 @@ int main(int argc, char ** argv) {
 	char filename[256];
 	sprintf(filename, "%ld", time(0));
 
-	FILE * outFile = fopen(filename, "w");
+	Logger log(filename);
 
-	std::cout << "Microfones: " << std::endl << "[" << std::endl;
+  	std::cout << "Microfones: " << std::endl << "[" << std::endl;
 
 	for(int i = 0; i < 8; i++) {
 		std::cout << mics[i].pos << "," << std::endl;
@@ -47,7 +50,11 @@ int main(int argc, char ** argv) {
 
 	std::cout << "]" << std::endl;
 
-	Locator3D<MICCOUNT> locator(mics);
+
+	std::vector<Algorithm *> algorithms;
+	algorithms.push_back((Algorithm *) new PhaseOnly(MICCOUNT));
+
+	Locator3D<MICCOUNT> locator(mics, algorithms);
 	FFTStream stream(options.fftIp().c_str(), options.fftPort());
 	PositionClient posClient(options.guiIp().c_str(), options.guiPort());
 	WebsocketPositionClient wclient(options.websocketPort());
@@ -60,17 +67,18 @@ int main(int argc, char ** argv) {
 	int i = 0;
 
 	for(auto packet : stream) {
+		// filter 50Hz and too high frequencies
 		if(packet.sines[0].freq < 50 || packet.sines[0].freq > 600)
 			continue;
 
 		pos = locator.locate(packet);
 		positionBuffer.push_back(pos);
 
-		fprintf(outFile, "%ld, %lf, %lf, %lf, %lf\n", time(0), packet.sines[0].freq, pos.x, pos.y, pos.z);
-		fflush(outFile);
+		// write position to log
+		log.log(packet.sines[0].freq, pos);
 
-		if(i % 5 == 0)
-			wclient.send(v4(packet.sines[0].freq, pos.x, pos.y, pos.z));
+		// send position to the websocket clients
+		wclient.send(v4(packet.sines[0].freq, pos.x, pos.y, pos.z));
 
 		// locate the shit and if it already exists send it out
 		if(!freqs.insert(packet.sines[0].freq).second) {

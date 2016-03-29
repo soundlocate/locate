@@ -91,7 +91,7 @@ public:
 	};
 
 private:
-	FFTStream(FFTSteamStatus newStatus) : status(newStatus), currentPacket() {}
+	FFTStream(FFTSteamStatus newStatus) : currentPacket(), status(newStatus) {}
 
 	sf::TcpSocket * server;
 	unsigned int numMic;
