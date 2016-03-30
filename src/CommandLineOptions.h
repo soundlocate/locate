@@ -49,7 +49,7 @@ private:
 
 	// supported options (no custom options for now)
     struct argp_option options[2] = {
-		{ 0 }
+		{ 0, 0, 0, 0, 0, 0 }
 	};
 
 	// struct for holding the argument info
@@ -118,7 +118,7 @@ private:
 	}
 
 	// argp parser definiton
-	struct argp argp = { options, parse_opt, args_doc, doc.c_str() };
+	struct argp argp = { options, parse_opt, args_doc, doc.c_str(), 0, 0, 0};
 
 	arguments args;
 };

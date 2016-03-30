@@ -18,6 +18,9 @@
 #include "Logger.h"
 #include "algorithms/Algorithm.h"
 #include "algorithms/PhaseOnly.h"
+#include "PostProcessor.h"
+
+#include <Stopwatch.h>
 
 #define MICCOUNT 8
 
@@ -25,6 +28,8 @@ int main(int argc, char ** argv) {
 	double distBetween = 0.42;
 
 	CommandLineOptions options(argc, argv);
+
+	Stopwatch::getInstance().setCustomSignature(32436);
 
 	std::vector<Microfone> mics = {
 		Microfone(0.0, 0.0, 0.0),
@@ -55,7 +60,14 @@ int main(int argc, char ** argv) {
 	algorithms.push_back((Algorithm *) new PhaseOnly(MICCOUNT));
 
 	Locator3D<MICCOUNT> locator(mics, algorithms);
+
+	// 0.2m maximum cluster size
+	PostProcessor postProcessor(mics, 0.2, locate::maxDist, 3, 10);
+
+	//ToDo(robin): use ringbuffer and drop old packets
 	FFTStream stream(options.fftIp().c_str(), options.fftPort());
+
+
 	PositionClient posClient(options.guiIp().c_str(), options.guiPort());
 	WebsocketPositionClient wclient(options.websocketPort());
 
@@ -65,11 +77,33 @@ int main(int argc, char ** argv) {
 	std::vector<v3> positionBuffer;
 
 	int i = 0;
+	u64 j = 0;
 
+	TICK("locate_total");
 	for(auto packet : stream) {
+		TOCK("locate_total");
+		TICK("locate_total");
+		TICK("locate_locate");
 		pos = locator.locate(packet);
+		TOCK("locate_locate");
+
+		TICK("locate_other_bullshit");
+
+		if(j++ > 100'000'000)
+			break;
+
+		postProcessor.add(packet, pos);
+
+		positionBuffer.clear();
+
+		for(auto pos : postProcessor.getPositions())
+			positionBuffer.push_back(pos.pos);
+
+		posClient.sendPositions(positionBuffer);
+
 
 		// check for sensible values
+/*
 		if(pos.norm() < locate::maxDist) {
 			positionBuffer.push_back(pos);
 
@@ -94,5 +128,9 @@ int main(int argc, char ** argv) {
 				positionBuffer.push_back(pos);
 			}
 		}
+*/
+		TOCK("locate_other_bullshit");
+
+		Stopwatch::getInstance().sendAll();
 	}
 }

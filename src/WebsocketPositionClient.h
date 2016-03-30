@@ -56,6 +56,10 @@ public:
 		return 0;
 	}
 
+	~WebsocketPositionClient() {
+		server.stop();
+	}
+
 private:
 	typedef websocketpp::server<websocketpp::config::asio> websocket_server;
 	websocket_server server;
