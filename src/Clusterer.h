@@ -15,10 +15,6 @@ public:
 	Clusterer(f64 maxClusterSize) : maxClusterSize(maxClusterSize) {}
 
 	std::vector<Position> cluster(PositionCache positions) {
-		std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-				  << "clustering " << positions.size() << " objs" << std::endl;
-
-
 	    clusters.clear();
 		pos.clear();
 
@@ -29,9 +25,6 @@ public:
 	    u64 other = 0;
 		f64 dsim = std::numeric_limits<f64>::max();
 		f64 dsimTmp;
-
-		std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-				  << "pos.size(): " << pos.size() << std::endl;
 
 		while(pos.size() > 1) {
 			for(u64 i = 0; i < pos.size(); i++) {
@@ -53,33 +46,14 @@ public:
 				}
 
 				if(shouldMerge(pos[i], pos[other])) {
-					std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-							  << "cluster should merge: " << i << "with: " << other << std::endl;
-
 					pos[i].merge(pos[other]);
-
-					std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-							  << "pos.size(): " << pos.size() << std::endl;
-
 					pos.erase(pos.begin() + other);
-
-					std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-							  << "pos.size() after erase: " << pos.size() << std::endl;
 				} else {
-					std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-							  << "cluster should not merge: " << i << "with: " << other << std::endl;
-
 					clusters.push_back(pos[i].center());
 					clusters.push_back(pos[other].center());
 
-					std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-							  << "pos.size(): " << pos.size() << std::endl;
-
 					pos.erase(pos.begin() + i);
 					pos.erase(pos.begin() + other);
-
-					std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-							  << "pos.size() after erase: " << pos.size() << std::endl;
 				}
 
 				dsim = std::numeric_limits<f64>::max();

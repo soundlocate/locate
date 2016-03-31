@@ -1,6 +1,7 @@
 #ifndef _FREQUENCYCACHE_H
 #define _FREQUENCYCACHE_H
 
+#include <chrono>
 #include <vector>
 
 #include "util/types.h"
@@ -20,9 +21,6 @@ public:
 	int add(Position p) {
 		Position pos;
 
-		std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-				  << "got position: " << p.pos << std::endl;
-
 		pos.frequency = freq;
 		pos.amplitude = 0;
 		pos.pos = v3();
@@ -39,10 +37,22 @@ public:
 		pos.amplitude /= meanWindow;
 		pos.pos /= meanWindow;
 
-		std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-				  << "adding position: " << pos.pos << std::endl;
-
 		positions.add(pos);
+		timestamps.add(std::chrono::high_resolution_clock::now());
+
+		return 0;
+	}
+
+	u64 deleteOlderThan(std::chrono::high_resolution_clock::duration d) {
+		auto now = std::chrono::high_resolution_clock::now();
+		auto timeStamps = timestamps.getItems();
+
+		for(u64 i = 0; i < timeStamps.size(); i++) {
+			if(now - timeStamps[i] > d) {
+				timestamps.remove(i);
+				positions.remove(i);
+			}
+		}
 
 		return 0;
 	}
@@ -60,6 +70,7 @@ private:
 	u64 meanWindow;
 	u64 maxKeep;
 
+	RingBuffer<std::chrono::time_point<std::chrono::high_resolution_clock>> timestamps;
 	RingBuffer<Position> lastPositions;
 	RingBuffer<Position> positions;
 };

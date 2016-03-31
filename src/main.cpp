@@ -61,8 +61,8 @@ int main(int argc, char ** argv) {
 
 	Locator3D<MICCOUNT> locator(mics, algorithms);
 
-	// 0.2m maximum cluster size
-	PostProcessor postProcessor(mics, 0.2, locate::maxDist, 3, 10);
+	// 0.2m maximum cluster size, 3 meanWindow, 10 maxKeep, 0.5 seconds value keep
+	PostProcessor postProcessor(mics, 0.2, locate::maxDist, 3, 10, 0.5);
 
 	//ToDo(robin): use ringbuffer and drop old packets
 	FFTStream stream(options.fftIp().c_str(), options.fftPort());
@@ -76,8 +76,7 @@ int main(int argc, char ** argv) {
 	std::unordered_set<double> freqs;
 	std::vector<v3> positionBuffer;
 
-	int i = 0;
-	u64 j = 0;
+	u64 i = 0;
 
 	TICK("locate_total");
 	for(auto packet : stream) {
@@ -88,9 +87,6 @@ int main(int argc, char ** argv) {
 		TOCK("locate_locate");
 
 		TICK("locate_other_bullshit");
-
-		if(j++ > 100'000'000)
-			break;
 
 		postProcessor.add(packet, pos);
 

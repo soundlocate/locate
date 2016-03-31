@@ -11,10 +11,11 @@ public:
 		buffer.reserve(size);
 	}
 
-	int add(T item) {
-		if(index < m_size)
+    u64 add(T item) {
+		if(buffer.size() < m_size) {
 			buffer.push_back(item);
-		else
+			index++;
+		} else
 			buffer[index++ % m_size] = item;
 
 		return 0;
@@ -22,6 +23,17 @@ public:
 
 	std::vector<T> getItems() {
 		return buffer;
+	}
+
+	u64 remove(u64 index) {
+		assert(index < buffer.size());
+
+		if(index > buffer.size())
+			return -1;
+		else
+			buffer.erase(buffer.begin() + index);
+
+		return 0;
 	}
 
 private:
