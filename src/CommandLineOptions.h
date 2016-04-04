@@ -4,8 +4,11 @@
 #include <string>
 #include <argp.h>
 
+#include <cassert>
 #include <iostream>
+#include <vector>
 
+#include "CSVTable.h"
 #include "config.h"
 #include "util/types.h"
 
@@ -34,6 +37,42 @@ public:
 	u16 websocketPort() {
 		return args.websocketPort;
 	}
+
+	f64 accuracy() {
+		return args.accuracy;
+	}
+
+	f64 clusterSize() {
+		return args.clusterSize;
+	}
+
+	u64 maxKeep() {
+		return args.maxKeep;
+	}
+
+	u64 meanWindow() {
+		return args.meanWindow;
+	}
+
+	f64 keepTime() {
+		return args.keepTime;
+	}
+
+	bool log() {
+		return args.log;
+	}
+
+	char * logfilename() {
+		return args.logfilename;
+	}
+
+	u64 micCount() {
+		return args.micCount;
+	}
+
+	double * mics() {
+		return args.mics;
+	}
 private:
 
 	// documentation of the program
@@ -47,8 +86,19 @@ private:
 	// documentation of non option arguments
     char args_doc[255] = "FFTIP FFTPORT GUIIP GUIPORT WEBSOCKETPORT";
 
+	// super(pd, "soundLocate", "-d " + dataAlgorithms, "-a " + accuracy, "-c " + maxClusterSize, "-k" + maxKeep, "-m " + meanWindow, logfile != null ? "-l " + logfile : "", "-p " + positionFile)
+
+    //ToDo(robin) : support multiple algorithms set from commandline
 	// supported options (no custom options for now)
-    struct argp_option options[2] = {
+    struct argp_option options[9] = {
+		{ "dataAlgorithms", 'd', "STRING", 0, "only PhaseOnly atm"},
+		{ "accuracy", 'a', "DOUBLE", 0, "accuracy of numeric solution"},
+		{ "clusterSize", 'c', "DOUBLE", 0, "max cluster size"},
+		{ "keep", 'k', "COUNT", 0, "maximum number of positions to keep"},
+		{ "meanwindow", 'w', "COUNT", 0, "size of averaging windowx"},
+		{ "timekeep", 't', "DOUBLE", 0, "time to keep old positions"},
+		{ "logfile", 'l', "FILE", 0, "if set use set logfile to save located positions"},
+		{ "positionfile", 'p', "FILE", 0, "filename of micfile"},
 		{ 0, 0, 0, 0, 0, 0 }
 	};
 
@@ -62,6 +112,57 @@ private:
 		u16 guiPort;
 
 		u16 websocketPort;
+
+		std::vector<u16> algorithms = {0}; // 0 -> phaseonly, 1 -> phaseandvelocity, 2-> phaseandamplitdue
+		f64 accuracy = 0.01;
+		f64 clusterSize = 0.1;
+		u64 maxKeep = 10;
+		u64 meanWindow = 3;
+		f64 keepTime = 0.5;
+
+		bool log;
+		char * logfilename;
+
+		u64 micCount = 8;
+		double * mics;
+
+		arguments() {
+			mics = new double[micCount * 3];
+			double distBetween = 0.42;
+			int i = 0;
+
+			mics[i++] = 0;
+			mics[i++] = 0;
+			mics[i++] = 0;
+
+			mics[i++] = 0;
+			mics[i++] = distBetween;
+			mics[i++] = 0;
+
+			mics[i++] = distBetween;
+			mics[i++] = 0;
+			mics[i++] = 0;
+
+			mics[i++] = distBetween;
+			mics[i++] = distBetween;
+			mics[i++] = 0;
+
+			mics[i++] = 0;
+			mics[i++] = 0;
+			mics[i++] = distBetween;
+
+			mics[i++] = distBetween;
+			mics[i++] = 0;
+			mics[i++] = distBetween;
+
+			mics[i++] = 0;
+			mics[i++] = distBetween;
+			mics[i++] = distBetween;
+
+			mics[i++] = distBetween;
+			mics[i++] = distBetween;
+			mics[i++] = distBetween;
+		}
 	};
 
 	// parsing of a single argument
@@ -72,6 +173,95 @@ private:
 
 		switch (key)
 		{
+		case 'd': {
+			std::string s(arg);
+
+			if(s == "PhaseOnly") {
+				arguments->algorithms.push_back(0);
+			} else if(s == "PhaseAndVelocity") {
+				arguments->algorithms.push_back(1);
+			} else if(s == "PhaseAndAmplitude") {
+				arguments->algorithms.push_back(2);
+			}
+
+			break;
+		}
+		case 'a': {
+			try {
+				arguments->accuracy = std::stod(arg);
+			} catch(std::invalid_argument) {
+				std::cout << "invalid accuracy " << arg << std::endl;
+				argp_usage(state);
+			}
+
+			break;
+		}
+		case 'c': {
+			try {
+				arguments->clusterSize = std::stod(arg);
+			} catch(std::invalid_argument) {
+				std::cout << "invalid clusterSize " << arg << std::endl;
+				argp_usage(state);
+			}
+
+			break;
+		}
+		case 'k': {
+			try {
+				arguments->maxKeep = std::stod(arg);
+			} catch(std::invalid_argument) {
+				std::cout << "invalid maxKeep " << arg << std::endl;
+				argp_usage(state);
+			}
+
+			break;
+		}
+		case 'w': {
+			try {
+				arguments->meanWindow = std::stoi(arg);
+			} catch(std::invalid_argument) {
+				std::cout << "invalid meanWindow " << arg << std::endl;
+				argp_usage(state);
+			}
+
+			break;
+		}
+		case 't': {
+			try {
+				arguments->keepTime = std::stod(arg);
+			} catch(std::invalid_argument) {
+				std::cout << "invalid keepTime " << arg << std::endl;
+				argp_usage(state);
+			}
+
+			break;
+		}
+		case 'l':
+			arguments->log = true;
+			arguments->logfilename = arg;
+			break;
+		case 'p': {
+			CSVTable t(arg);
+			auto rows = t.getRows();
+			arguments->micCount = rows.size();
+			arguments->mics = new double[rows.size() * 3];
+			int i = 0;
+
+			try {
+				for(auto row : rows) {
+					assert(row.size() == 3);
+
+					arguments->mics[i++] = std::stoi(row[0]);
+					arguments->mics[i++] = std::stoi(row[1]);
+					arguments->mics[i++] = std::stoi(row[2]);
+				}
+			} catch(std::invalid_argument) {
+				std::cout << "invalid positionfile " << arg << std::endl;
+				argp_usage(state);
+			}
+
+			break;
+		}
 		case ARGP_KEY_ARG: /* non option argument */
             // check if more than all needed arguments are passed (and abort if so)
 			if (state->arg_num >= 5) {

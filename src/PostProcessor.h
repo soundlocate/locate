@@ -2,6 +2,7 @@
 #define _POSTPROCESSOR_H
 
 #include <vector>
+#include <chrono>
 
 #include "FFTPacket.h"
 #include "util/types.h"
@@ -11,9 +12,9 @@
 
 class PostProcessor {
 public:
-	PostProcessor(std::vector<Microfone> mics, f64 maxClusterSize, f64 maxDist, u64 meanWindow, u64 maxKeep) :
+	PostProcessor(std::vector<Microfone> mics, f64 maxClusterSize, f64 maxDist, u64 meanWindow, u64 maxKeep, f64 keepTime) :
 		clusterer(maxClusterSize), positionBuffer(meanWindow, maxKeep), mics(mics),
-		maxDist(maxDist), meanWindow(meanWindow), maxKeep(maxKeep) {}
+		maxDist(maxDist), meanWindow(meanWindow), maxKeep(maxKeep), keepTime(keepTime) {}
 
 	u64 add(FFTPacket p, v3 pos) {
 		if(pos.norm() > maxDist
@@ -26,17 +27,11 @@ public:
 	    position.amplitude = p.meanAmplitude();
 		position.pos = pos;
 
-		std::cout << "[" << __PRETTY_FUNCTION__ << "]: " << "adding position: "
-				  << position.frequency << ", "
-				  << position.amplitude << ", "
-				  << position.pos << std::endl;
-
 		positionBuffer.add(position);
 
-		std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-				  << "new size: " << positionBuffer.getPositions().size() << std::endl;
 		// recluster all positions
 		if(positionBuffer.getPositions().size() % (meanWindow * maxKeep)) {
+			positionBuffer.deleteOlderThan(std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::milliseconds((int) (keepTime * 1000))));
 			positions =	clusterer.cluster(positionBuffer.getPositions());
 		}
 
@@ -57,6 +52,8 @@ private:
 
 	u64 meanWindow;
 	u64 maxKeep;
+
+	f64 keepTime;
 };
 
 #endif

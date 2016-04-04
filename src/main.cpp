@@ -24,13 +24,19 @@
 
 #define MICCOUNT 8
 
+//ToDo(robin): implement log file
 int main(int argc, char ** argv) {
-	double distBetween = 0.42;
-
 	CommandLineOptions options(argc, argv);
 
 	Stopwatch::getInstance().setCustomSignature(32436);
 
+	std::vector<Microfone> mics;
+	double * micTmp = options.mics();
+
+	for(u64 i = 0; i < options.micCount(); i++) {
+		mics.push_back(Microfone(micTmp[3 * i], micTmp[3 * i + 1], micTmp[3 * i + 2]));
+	}
+/*
 	std::vector<Microfone> mics = {
 		Microfone(0.0, 0.0, 0.0),
 		Microfone(0.0, distBetween , 0.0),
@@ -41,11 +47,11 @@ int main(int argc, char ** argv) {
 		Microfone(0.0, distBetween, distBetween),
 		Microfone(distBetween, distBetween, distBetween),
 	};
+*/
+	Logger * log = nullptr;
 
-	char filename[256];
-	sprintf(filename, "%ld", time(0));
-
-	Logger log(filename);
+	if(options.log())
+		log = new Logger(options.logfilename());
 
   	std::cout << "Microfones: " << std::endl << "[" << std::endl;
 
@@ -55,23 +61,22 @@ int main(int argc, char ** argv) {
 
 	std::cout << "]" << std::endl;
 
-
 	std::vector<Algorithm *> algorithms;
-	algorithms.push_back((Algorithm *) new PhaseOnly(MICCOUNT));
+	algorithms.push_back((Algorithm *) new PhaseOnly(MICCOUNT, options.accuracy()));
 
 	Locator3D<MICCOUNT> locator(mics, algorithms);
 
 	// 0.2m maximum cluster size, 3 meanWindow, 10 maxKeep, 0.5 seconds value keep
-	PostProcessor postProcessor(mics, 0.2, locate::maxDist, 3, 10, 0.5);
+	// ToDo(robin):	finish value keep time support
+	PostProcessor postProcessor(mics, options.clusterSize(), locate::maxDist, options.meanWindow(), options.maxKeep(), options.keepTime());
 
-	//ToDo(robin): use ringbuffer and drop old packets
+	// ToDo(robin): use ringbuffer and drop old packets
 	FFTStream stream(options.fftIp().c_str(), options.fftPort());
 
+	v3 pos;
 
 	PositionClient posClient(options.guiIp().c_str(), options.guiPort());
 	WebsocketPositionClient wclient(options.websocketPort());
-
-	v3 pos;
 
 	std::unordered_set<double> freqs;
 	std::vector<v3> positionBuffer;
@@ -92,8 +97,13 @@ int main(int argc, char ** argv) {
 
 		positionBuffer.clear();
 
-		for(auto pos : postProcessor.getPositions())
+		for(auto pos : postProcessor.getPositions()) {
 			positionBuffer.push_back(pos.pos);
+
+			if(log)
+				log->log(pos.frequency, pos.pos);
+		}
+
 
 		posClient.sendPositions(positionBuffer);
 

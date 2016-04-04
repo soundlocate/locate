@@ -29,7 +29,7 @@ public:
 		server.listen(port);
 		server.start_accept();
 
-		std::cout << "localhost:" << port << std::endl;
+		std::cout << "binding websocket to " << port << std::endl;
 
 		std::thread t([&]() {
 				server.run();

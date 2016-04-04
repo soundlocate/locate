@@ -10,7 +10,7 @@
 
 class FrequencyCache {
 public:
-	FrequencyCache(f64 frequency, u64 meanWindow, u64 maxKeep) : freq(frequency), meanWindow(meanWindow), maxKeep(maxKeep), lastPositions(meanWindow), positions(maxKeep) {
+	FrequencyCache(f64 frequency, u64 meanWindow, u64 maxKeep) : freq(frequency), meanWindow(meanWindow), maxKeep(maxKeep), timestamps(maxKeep), lastPositions(meanWindow), positions(maxKeep) {
 		Position pos;
 		pos.frequency = freq;
 		pos.amplitude = 0;

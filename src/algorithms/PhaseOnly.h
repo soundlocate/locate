@@ -14,7 +14,7 @@
 
 class PhaseOnly : public Algorithm {
 public:
-	PhaseOnly(u64 numMics) : numMics(numMics) {
+	PhaseOnly(u64 numMics, f64 accuracy) : numMics(numMics), accuracy(accuracy) {
 		target = (f64 *) malloc(sizeof(f64) * (numMics - 1));
 		singular = (f64 *) malloc(sizeof(f64) * (numMics - 1));
 		matrix = (f64 *) malloc(sizeof(f64) * (3 * numMics));

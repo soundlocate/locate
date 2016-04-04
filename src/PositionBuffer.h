@@ -2,6 +2,7 @@
 #define _POSITIONBUFFER_H
 
 #include <vector>
+#include <chrono>
 
 #include "util/types.h"
 #include "Position.h"
@@ -27,9 +28,9 @@ public:
 		return 0;
 	}
 
-	u64 deleteOlderThan() {
+	u64 deleteOlderThan(std::chrono::high_resolution_clock::duration d) {
 		for(auto fcache : data) {
-
+			fcache.deleteOlderThan(d);
 		}
 	}
 
