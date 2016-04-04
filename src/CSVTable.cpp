@@ -1,7 +1,9 @@
 #include "CSVTable.h"
 
 CSVTable::CSVTable(const char * filename, char seperator) : m_seperator(seperator) {
- 	std::ifstream file(filename);
+
+  try {
+  std::ifstream file(filename);
 
 	// enable exceptions
 	// ToDo(robin): actually handle exceptions
@@ -17,6 +19,9 @@ CSVTable::CSVTable(const char * filename, char seperator) : m_seperator(seperato
 						 std::istreambuf_iterator<char>());
 
 	file.close();
+  } catch(std::exception e) {
+    std::cout << e.what() << std::endl;
+  }
 }
 
 std::vector<std::vector<std::string>> CSVTable::getRows() {

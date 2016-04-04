@@ -17,7 +17,7 @@ public:
 		if((file = fopen(filename, "w")))
 			this->file = file;
 		else
-			std::cerr << "error opening log file" << filename << std::endl;
+			std::cerr << "error opening log file " << filename << std::endl;
 	}
 
 	Logger(FILE * file) {

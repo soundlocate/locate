@@ -120,7 +120,7 @@ private:
 		u64 meanWindow = 3;
 		f64 keepTime = 0.5;
 
-		bool log;
+		bool log = false;
 		char * logfilename;
 
 		u64 micCount = 8;
@@ -251,9 +251,9 @@ private:
 				for(auto row : rows) {
 					assert(row.size() == 3);
 
-					arguments->mics[i++] = std::stoi(row[0]);
-					arguments->mics[i++] = std::stoi(row[1]);
-					arguments->mics[i++] = std::stoi(row[2]);
+					arguments->mics[i++] = std::stod(row[0]);
+					arguments->mics[i++] = std::stod(row[1]);
+					arguments->mics[i++] = std::stod(row[2]);
 				}
 			} catch(std::invalid_argument) {
 				std::cout << "invalid positionfile " << arg << std::endl;

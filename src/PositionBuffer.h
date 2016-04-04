@@ -32,6 +32,8 @@ public:
 		for(auto fcache : data) {
 			fcache.deleteOlderThan(d);
 		}
+
+    return 0;
 	}
 
 	PositionCache getPositions() {

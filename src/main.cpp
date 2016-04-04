@@ -22,8 +22,6 @@
 
 #include <Stopwatch.h>
 
-#define MICCOUNT 8
-
 //ToDo(robin): implement log file
 int main(int argc, char ** argv) {
 	CommandLineOptions options(argc, argv);
@@ -54,17 +52,17 @@ int main(int argc, char ** argv) {
 		log = new Logger(options.logfilename());
 
   	std::cout << "Microfones: " << std::endl << "[" << std::endl;
-
-	for(int i = 0; i < 8; i++) {
+    
+  for(int i = 0; i < options.micCount(); i++) {
 		std::cout << mics[i].pos << "," << std::endl;
 	}
 
 	std::cout << "]" << std::endl;
 
 	std::vector<Algorithm *> algorithms;
-	algorithms.push_back((Algorithm *) new PhaseOnly(MICCOUNT, options.accuracy()));
+	algorithms.push_back((Algorithm *) new PhaseOnly(options.micCount(), options.accuracy()));
 
-	Locator3D<MICCOUNT> locator(mics, algorithms);
+	Locator3D locator( mics, algorithms);
 
 	// 0.2m maximum cluster size, 3 meanWindow, 10 maxKeep, 0.5 seconds value keep
 	// ToDo(robin):	finish value keep time support
@@ -92,7 +90,7 @@ int main(int argc, char ** argv) {
 		TOCK("locate_locate");
 
 		TICK("locate_other_bullshit");
-
+    /*
 		postProcessor.add(packet, pos);
 
 		positionBuffer.clear();
@@ -106,15 +104,16 @@ int main(int argc, char ** argv) {
 
 
 		posClient.sendPositions(positionBuffer);
-
+    */
 
 		// check for sensible values
-/*
+
 		if(pos.norm() < locate::maxDist) {
 			positionBuffer.push_back(pos);
 
 			// write position to log
-			log.log(packet.sines[0].freq, pos);
+      if(log)
+        log->log(packet.sines[0].freq, pos);
 
 			// send position to the websocket clients
 			wclient.send(v4(packet.sines[0].freq, pos.x, pos.y, pos.z));
@@ -134,7 +133,7 @@ int main(int argc, char ** argv) {
 				positionBuffer.push_back(pos);
 			}
 		}
-*/
+    
 		TOCK("locate_other_bullshit");
 
 		Stopwatch::getInstance().sendAll();

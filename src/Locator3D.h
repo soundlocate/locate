@@ -16,10 +16,10 @@
 #include "algorithms/Algorithm.h"
 #include "PositionRater.h"
 
-template<u64 numMics>
 class Locator3D {
 public:
-	Locator3D(std::vector<Microfone> microfones, std::vector<Algorithm *> a) : mics(microfones), algorithms(a), rater(mics) {
+ Locator3D(std::vector<Microfone> microfones, std::vector<Algorithm *> a) : numMics(microfones.size()), mics(microfones), algorithms(a), rater(mics) {
+
 		assert(mics.size() == numMics);
 
 		std::cout << "numMics: " << numMics << std::endl;
@@ -77,6 +77,8 @@ public:
 		return rater.bestPosition(positions, packet);
 	};
 private:
+  u64 numMics;
+  
 	std::vector<Microfone> mics;
 	std::vector<Algorithm *> algorithms;
 	PositionRater rater;
