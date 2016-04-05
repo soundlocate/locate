@@ -30,7 +30,7 @@ public:
 		positionBuffer.add(position);
 
 		// recluster all positions
-		if(counter++ % (meanWindow * maxKeep) == 0) {
+		if(counter++ % 10 == 0) {
 			positionBuffer.deleteOlderThan(std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::milliseconds((int) (keepTime * 1000))));
 
 			positions =	clusterer.cluster(positionBuffer.getPositions());
