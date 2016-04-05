@@ -25,44 +25,46 @@ public:
 	    u64 other = 0;
 		f64 dsim = std::numeric_limits<f64>::max();
 		f64 dsimTmp;
+		u64 hasMerged;
+		u64 mergeCanidateFound;
 
-		while(pos.size() > 1) {
+		do {
+			hasMerged = false;
+			mergeCanidateFound = false;
+
 			for(u64 i = 0; i < pos.size(); i++) {
+				// find cluster with minimum dissimiliarity in respect to i
 				for(u64 j = 0; j < pos.size(); j++) {
 					// do not merge the clusters with itself
-					if(i == j)
-						continue;
-
-					std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-							  << "i: " << i << " j: " << j << std::endl;
-
+					if(i == j) continue;
 
 					dsimTmp = dissimilarity(pos[i], pos[j]);
 
 					if(dsimTmp < dsim) {
 						dsim = dsimTmp;
 						other = j;
+
+						mergeCanidateFound = true;
 					}
 				}
 
-				if(shouldMerge(pos[i], pos[other])) {
+				// merge i with the cluster with lowest dissimilarity
+				if(mergeCanidateFound && shouldMerge(pos[i], pos[other])) {
 					pos[i].merge(pos[other]);
-					pos.erase(pos.begin() + other);
-				} else {
-					clusters.push_back(pos[i].center());
-					clusters.push_back(pos[other].center());
 
-					pos.erase(pos.begin() + i);
 					pos.erase(pos.begin() + other);
+
+					hasMerged = true;
 				}
 
 				dsim = std::numeric_limits<f64>::max();
 				other = 0;
 			}
-		}
+		} while(hasMerged); /* try and merge clusters untill no cluster gets merged anymore */
 
-		if(pos.size() == 1)
-			clusters.push_back(pos[0].center());
+		for(auto cluster : pos) {
+			clusters.push_back(cluster.center());
+		}
 
 		pos.clear();
 
@@ -96,7 +98,6 @@ private:
 				pos.frequency += p.frequency;
 			}
 
-			pos.pos /= objs.size();
 			pos.pos /= pos.amplitude;
 
 			pos.amplitude /= objs.size();
@@ -111,10 +112,6 @@ private:
 		f64 ret = 0;
 		f64 tmp;
 
-		std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-				  << "dissimilarity of: " << a.objs[0].pos
-				  << "and: " << b.objs[0].pos;
-
 		for(auto posa : a.objs) {
 			for(auto posb : b.objs) {
 				tmp = (posa.pos - posb.pos).norm();
@@ -123,9 +120,6 @@ private:
 		}
 
 		ret =  sqrt(ret / (a.objs.size() * b.objs.size()));
-
-		std::cout << "[" << __PRETTY_FUNCTION__ << "]: "
-				  << ": " << ret << std::endl;
 
 		return ret;
 	}

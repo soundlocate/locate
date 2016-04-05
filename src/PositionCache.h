@@ -21,8 +21,9 @@ public:
 
 	u64 size() {
 		u64 size = 0;
-		for(auto fcache : data)
+		for(auto fcache : data) {
 			size += fcache.getPositions().size();
+		}
 
 		return size;
 	}

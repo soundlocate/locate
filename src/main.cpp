@@ -2,6 +2,8 @@
 #include <unordered_set>
 #include <vector>
 #include <fstream>
+#include <thread>
+#include <chrono>
 
 #include <cstdio>
 #include <ctime>
@@ -19,6 +21,7 @@
 #include "algorithms/Algorithm.h"
 #include "algorithms/PhaseOnly.h"
 #include "PostProcessor.h"
+#include "RingBuffer.h"
 
 #include <Stopwatch.h>
 
@@ -34,18 +37,7 @@ int main(int argc, char ** argv) {
 	for(u64 i = 0; i < options.micCount(); i++) {
 		mics.push_back(Microfone(micTmp[3 * i], micTmp[3 * i + 1], micTmp[3 * i + 2]));
 	}
-/*
-	std::vector<Microfone> mics = {
-		Microfone(0.0, 0.0, 0.0),
-		Microfone(0.0, distBetween , 0.0),
-		Microfone(distBetween,0.0,0.0),
-		Microfone(distBetween, distBetween, 0.0),
-		Microfone(0.0, 0.0, distBetween),
-		Microfone(distBetween, 0.0, distBetween),
-		Microfone(0.0, distBetween, distBetween),
-		Microfone(distBetween, distBetween, distBetween),
-	};
-*/
+
 	Logger * log = nullptr;
 
 	if(options.log())
@@ -53,7 +45,7 @@ int main(int argc, char ** argv) {
 
   	std::cout << "Microfones: " << std::endl << "[" << std::endl;
     
-  for(int i = 0; i < options.micCount(); i++) {
+	for(u64 i = 0; i < options.micCount(); i++) {
 		std::cout << mics[i].pos << "," << std::endl;
 	}
 
@@ -79,7 +71,7 @@ int main(int argc, char ** argv) {
 	std::unordered_set<double> freqs;
 	std::vector<v3> positionBuffer;
 
-	u64 i = 0;
+	// u64 i = 0;
 
 	TICK("locate_total");
 	for(auto packet : stream) {
@@ -90,7 +82,7 @@ int main(int argc, char ** argv) {
 		TOCK("locate_locate");
 
 		TICK("locate_other_bullshit");
-    /*
+
 		postProcessor.add(packet, pos);
 
 		positionBuffer.clear();
@@ -102,37 +94,37 @@ int main(int argc, char ** argv) {
 				log->log(pos.frequency, pos.pos);
 		}
 
-
 		posClient.sendPositions(positionBuffer);
-    */
+
 
 		// check for sensible values
 
-		if(pos.norm() < locate::maxDist) {
-			positionBuffer.push_back(pos);
+		// if(pos.norm() < locate::maxDist) {
+		// 	positionBuffer.push_back(pos);
 
-			// write position to log
-      if(log)
-        log->log(packet.sines[0].freq, pos);
+		// 	// write position to log
+		// 	if(log)
+		// 		log->log(packet.sines[0].freq, pos);
 
-			// send position to the websocket clients
-			wclient.send(v4(packet.sines[0].freq, pos.x, pos.y, pos.z));
+		// 	// send position to the websocket clients
+		// 	wclient.send(v4(packet.sines[0].freq, pos.x, pos.y, pos.z));
 
-			// locate the shit and if it already exists send it out
-			if(!freqs.insert(packet.sines[0].freq).second) {
-				i++;
+		// 	// locate the shit and if it already exists send it out
+		// 	if(!freqs.insert(packet.sines[0].freq).second) {
+		// 		i++;
 
-				// delete last position, it will be duplicate
-				positionBuffer.erase(positionBuffer.end() - 1);
+		// 		// delete last position, it will be duplicate
+		// 		positionBuffer.erase(positionBuffer.end() - 1);
 
-				posClient.sendPositions(positionBuffer);
-				freqs.clear();
-				positionBuffer.clear();
+		// 		posClient.sendPositions(positionBuffer);
+		// 		freqs.clear();
+		// 		positionBuffer.clear();
 
-				// add last position as first new position
-				positionBuffer.push_back(pos);
-			}
-		}
+		// 		// add last position as first new position
+		// 		positionBuffer.push_back(pos);
+		// 	}
+		// }
+
     
 		TOCK("locate_other_bullshit");
 

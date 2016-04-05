@@ -14,7 +14,8 @@ public:
 
 	u64 add(Position p) {
 		// search for existing frequency cache
-		for(auto fcache : data) {
+
+		for(auto & fcache : data) {
 			if(fcache.getFreq() == p.frequency) {
 				fcache.add(p);
 				return 0;
@@ -29,11 +30,11 @@ public:
 	}
 
 	u64 deleteOlderThan(std::chrono::high_resolution_clock::duration d) {
-		for(auto fcache : data) {
+		for(auto & fcache : data) {
 			fcache.deleteOlderThan(d);
 		}
 
-    return 0;
+		return 0;
 	}
 
 	PositionCache getPositions() {

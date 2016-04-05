@@ -30,8 +30,9 @@ public:
 		positionBuffer.add(position);
 
 		// recluster all positions
-		if(positionBuffer.getPositions().size() % (meanWindow * maxKeep)) {
+		if(counter++ % (meanWindow * maxKeep) == 0) {
 			positionBuffer.deleteOlderThan(std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::milliseconds((int) (keepTime * 1000))));
+
 			positions =	clusterer.cluster(positionBuffer.getPositions());
 		}
 
@@ -52,6 +53,7 @@ private:
 
 	u64 meanWindow;
 	u64 maxKeep;
+	u64 counter;
 
 	f64 keepTime;
 };

@@ -21,7 +21,7 @@ public:
 		return 0;
 	}
 
-	std::vector<T> getItems() {
+	std::vector<T> & getItems() {
 		return buffer;
 	}
 
@@ -30,8 +30,9 @@ public:
 
 		if(index > buffer.size())
 			return -1;
-		else
+		else {
 			buffer.erase(buffer.begin() + index);
+		}
 
 		return 0;
 	}

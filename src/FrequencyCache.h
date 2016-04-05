@@ -34,10 +34,11 @@ public:
 			pos.pos += position.pos;
 		}
 
-		pos.amplitude /= meanWindow;
-		pos.pos /= meanWindow;
+		pos.amplitude /= lastPositions.getItems().size();
+		pos.pos /= lastPositions.getItems().size();
 
 		positions.add(pos);
+
 		timestamps.add(std::chrono::high_resolution_clock::now());
 
 		return 0;
@@ -45,19 +46,20 @@ public:
 
 	u64 deleteOlderThan(std::chrono::high_resolution_clock::duration d) {
 		auto now = std::chrono::high_resolution_clock::now();
-		auto timeStamps = timestamps.getItems();
+		auto & timeStamps = timestamps.getItems();
 
 		for(u64 i = 0; i < timeStamps.size(); i++) {
-			if(now - timeStamps[i] > d) {
+			if((now - timeStamps.at(i)) > d) {
 				timestamps.remove(i);
 				positions.remove(i);
+				i--;
 			}
 		}
 
 		return 0;
 	}
 
-	std::vector<Position> getPositions() {
+	std::vector<Position> & getPositions() {
 		return positions.getItems();
 	}
 
