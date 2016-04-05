@@ -21,8 +21,6 @@ public:
 	int sendPositions(std::vector<v3> positions) {
 		u32	size = positions.size();
 
-		std::cout << "sending " << size << "positions" << std::endl;
-
 		if(size != 1) {
 			server->send(&size, sizeof(u32));
 			server->send(positions.data(), sizeof(v3) * size);
