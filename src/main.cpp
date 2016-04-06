@@ -56,9 +56,11 @@ int main(int argc, char ** argv) {
 
 	Locator3D locator( mics, algorithms);
 
+
+
 	// 0.2m maximum cluster size, 3 meanWindow, 10 maxKeep, 0.5 seconds value keep
 	// ToDo(robin):	finish value keep time support
-	PostProcessor postProcessor(mics, options.clusterSize(), locate::maxDist, options.meanWindow(), options.maxKeep(), options.keepTime());
+	PostProcessor postProcessor(mics, options.clusterSize(), locate::maxDist, options.dissimilarityFunction(),  options.meanWindow(), options.maxKeep(), options.keepTime());
 
 	// ToDo(robin): use ringbuffer and drop old packets
 	FFTStream stream(options.fftIp().c_str(), options.fftPort());
@@ -77,6 +79,7 @@ int main(int argc, char ** argv) {
 	for(auto packet : stream) {
 		TOCK("locate_total");
 		TICK("locate_total");
+
 		TICK("locate_locate");
 		pos = locator.locate(packet);
 		TOCK("locate_locate");
@@ -95,7 +98,6 @@ int main(int argc, char ** argv) {
 		}
 
 		posClient.sendPositions(positionBuffer);
-
 
 		// check for sensible values
 

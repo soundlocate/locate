@@ -9,12 +9,20 @@
 #include "Microfone.h"
 #include "PositionBuffer.h"
 #include "Clusterer.h"
+#include "Dissimilarity.h"
+#include "DissimilarityMeanDist.h"
+#include "DissimilarityMeanDirection.h"
 
 class PostProcessor {
 public:
-	PostProcessor(std::vector<Microfone> mics, f64 maxClusterSize, f64 maxDist, u64 meanWindow, u64 maxKeep, f64 keepTime) :
-		clusterer(maxClusterSize), positionBuffer(meanWindow, maxKeep), mics(mics),
-		maxDist(maxDist), meanWindow(meanWindow), maxKeep(maxKeep), keepTime(keepTime) {}
+	// Note(robin): only valid values for dissimilarity are allowed (), no validity checks performed!
+	PostProcessor(std::vector<Microfone> mics, f64 maxClusterSize, f64 maxDist,
+				  u64 dissimilarity, u64 meanWindow, u64 maxKeep, f64 keepTime) :
+		clusterer(dissimilarity == 0 ?
+				  (Dissimilarity *) new DissimilarityMeanDirection(mics, maxClusterSize) :
+				  (Dissimilarity *) new DissimilarityMeanDist(maxClusterSize)),
+		positionBuffer(meanWindow, maxKeep), mics(mics), maxDist(maxDist),
+		meanWindow(meanWindow), maxKeep(maxKeep), keepTime(keepTime) {}
 
 	u64 add(FFTPacket p, v3 pos) {
 		if(pos.norm() > maxDist

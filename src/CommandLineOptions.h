@@ -58,7 +58,7 @@ public:
 		return args.keepTime;
 	}
 
-	bool log() {
+	u64 log() {
 		return args.log;
 	}
 
@@ -70,8 +70,12 @@ public:
 		return args.micCount;
 	}
 
-	double * mics() {
+	f64 * mics() {
 		return args.mics;
+	}
+
+	u64 dissimilarityFunction() {
+		return args.dissimilarity;
 	}
 private:
 
@@ -90,15 +94,16 @@ private:
 
     //ToDo(robin) : support multiple algorithms set from commandline
 	// supported options (no custom options for now)
-    struct argp_option options[9] = {
+    struct argp_option options[10] = {
 		{ "dataAlgorithms", 'd', "STRING", 0, "only PhaseOnly atm"},
-		{ "accuracy", 'a', "DOUBLE", 0, "accuracy of numeric solution"},
-		{ "clusterSize", 'c', "DOUBLE", 0, "max cluster size"},
-		{ "keep", 'k', "COUNT", 0, "maximum number of positions to keep"},
-		{ "meanwindow", 'w', "COUNT", 0, "size of averaging windowx"},
-		{ "timekeep", 't', "DOUBLE", 0, "time to keep old positions"},
-		{ "logfile", 'l', "FILE", 0, "if set use set logfile to save located positions"},
-		{ "positionfile", 'p', "FILE", 0, "filename of micfile"},
+		{ "accuracy"      , 'a', "DOUBLE", 0, "accuracy of numeric solution"},
+		{ "clusterSize"   , 'c', "DOUBLE", 0, "max cluster size"},
+		{ "keep"          , 'k', "COUNT", 0, "maximum number of positions to keep"},
+		{ "meanwindow"    , 'w', "COUNT", 0, "size of averaging windowx"},
+		{ "timekeep"      , 't', "DOUBLE", 0, "time to keep old positions"},
+		{ "logfile"       , 'l', "FILE", 0, "if set use set logfile to save located positions"},
+		{ "positionfile"  , 'p', "FILE", 0, "filename of micfile"},
+		{ "dissimilarity" , 'f', "DOUBLE", 0, "which dissimilarity function to use [meanDist, meanDirection]"},
 		{ 0, 0, 0, 0, 0, 0 }
 	};
 
@@ -114,6 +119,7 @@ private:
 		u16 websocketPort;
 
 		std::vector<u16> algorithms = {0}; // 0 -> phaseonly, 1 -> phaseandvelocity, 2-> phaseandamplitdue
+		u64 dissimilarity = 0; // 0 -> meanDirection, 1 -> meanDist
 		f64 accuracy = 0.01;
 		f64 clusterSize = 0.1;
 		u64 maxKeep = 10;
@@ -173,6 +179,18 @@ private:
 
 		switch (key)
 		{
+		case 'f': {
+			std::string s(arg);
+
+			if(s == "meanDist") {
+				arguments->dissimilarity = 1;
+			} else if(s == "meanDirection") {
+				arguments->dissimilarity = 0;
+			} else {
+				std::cerr << "invalid dissimilarity function " << arg << std::endl;
+				argp_usage(state);
+			}
+		}
 		case 'd': {
 			std::string s(arg);
 
@@ -182,6 +200,9 @@ private:
 				arguments->algorithms.push_back(1);
 			} else if(s == "PhaseAndAmplitude") {
 				arguments->algorithms.push_back(2);
+			} else {
+				std::cerr << "invalid locate algorithm " << arg << std::endl;
+				argp_usage(state);
 			}
 
 			break;

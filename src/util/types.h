@@ -187,7 +187,7 @@ union Vector3D {
 		return (this->x == rhs.x) && (this->y == rhs.y) && (this->z == rhs.z);
 	}
 
-	auto norm() -> decltype(x * x + y * y + z * z) {
+	auto norm() const -> decltype(x * x + y * y + z * z) {
 		return std::sqrt(x * x + y * y + z * z);
 	}
 };
