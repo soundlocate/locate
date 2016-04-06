@@ -75,7 +75,6 @@ public:
 		// cartesian to spherical (radius = 1)
 		for(auto pos : a.objs) {
 			tmp = pos.pos - micCenter;
-			std::cout << pos.pos << std::endl;
 			anglex += std::atan2(tmp.y, tmp.x);
 			anglez += std::acos(tmp.z / tmp.norm());
 
