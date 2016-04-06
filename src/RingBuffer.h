@@ -1,7 +1,10 @@
 #ifndef _RINGBUFFER_H
 #define _RINGBUFFER_H
 
+#include <cassert>
+
 #include <vector>
+
 #include "util/types.h"
 
 template<typename T>
@@ -30,13 +33,11 @@ public:
 
 		if(index > buffer.size())
 			return -1;
-		else {
+		else
 			buffer.erase(buffer.begin() + index);
-		}
 
 		return 0;
 	}
-
 private:
 	u64 index = 0;
 	u64 m_size;

@@ -14,69 +14,37 @@
 
 class CommandLineOptions {
 public:
-	CommandLineOptions(int argc, char ** argv) {
-		argp_parse(&argp, argc, argv, 0, 0, &args);
-	}
+	CommandLineOptions(int argc, char ** argv);
 
-	std::string fftIp() {
-		return args.fftIp;
-	}
+	std::string fftIp() const;
 
-    u16 fftPort() {
-		return args.fftPort;
-	}
+	u16 fftPort() const;
 
-	std::string guiIp() {
-		return args.guiIp;
-	}
+	std::string guiIp() const;
 
-    u16 guiPort() {
-		return args.guiPort;
-	}
+    u16 guiPort() const;
 
-	u16 websocketPort() {
-		return args.websocketPort;
-	}
+	u16 websocketPort() const;
 
-	f64 accuracy() {
-		return args.accuracy;
-	}
+	f64 accuracy() const;
 
-	f64 clusterSize() {
-		return args.clusterSize;
-	}
+	f64 clusterSize() const;
 
-	u64 maxKeep() {
-		return args.maxKeep;
-	}
+	u64 maxKeep() const;
 
-	u64 meanWindow() {
-		return args.meanWindow;
-	}
+	u64 meanWindow() const;
 
-	f64 keepTime() {
-		return args.keepTime;
-	}
+	f64 keepTime() const;
 
-	u64 log() {
-		return args.log;
-	}
+	u64 log() const;
 
-	char * logfilename() {
-		return args.logfilename;
-	}
+	char * logfilename() const;
 
-	u64 micCount() {
-		return args.micCount;
-	}
+	u64 micCount() const;
 
-	f64 * mics() {
-		return args.mics;
-	}
+	f64 * mics() const;
 
-	u64 dissimilarityFunction() {
-		return args.dissimilarity;
-	}
+	u64 dissimilarityFunction() const;
 private:
 
 	// documentation of the program
@@ -171,9 +139,13 @@ private:
 		}
 	};
 
+	// argp parser definiton
+	struct argp argp = { options, parse_opt, args_doc, doc.c_str(), 0, 0, 0};
+
+	arguments args;
+
 	// parsing of a single argument
 	static error_t parse_opt (int key, char *arg, struct argp_state *state) {
-
 		// get the struct for saving the arguments
 		arguments * arguments = (struct arguments *) state->input;
 
@@ -286,7 +258,7 @@ private:
 			break;
 		}
 		case ARGP_KEY_ARG: /* non option argument */
-            // check if more than all needed arguments are passed (and abort if so)
+			// check if more than all needed arguments are passed (and abort if so)
 			if (state->arg_num >= 5) {
 				argp_usage(state);
 			}
@@ -329,11 +301,6 @@ private:
 		}
 		return 0;
 	}
-
-	// argp parser definiton
-	struct argp argp = { options, parse_opt, args_doc, doc.c_str(), 0, 0, 0};
-
-	arguments args;
 };
 
 #endif
