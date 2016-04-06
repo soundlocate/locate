@@ -4,6 +4,7 @@
 #include <fstream>
 #include <thread>
 #include <chrono>
+#include <thread>
 
 #include <cstdio>
 #include <ctime>
@@ -22,6 +23,8 @@
 #include "algorithms/PhaseOnly.h"
 #include "PostProcessor.h"
 #include "RingBuffer.h"
+
+#include <QtCore/QCoreApplication>
 
 #include <Stopwatch.h>
 
@@ -69,7 +72,21 @@ int main(int argc, char ** argv) {
 
 	PositionClient posClient(options.guiIp().c_str(), options.guiPort());
 
-	WebsocketPositionClient wclient(options.websocketPort());
+	WebsocketPositionClient * wclient = nullptr;
+
+	auto handle = std::thread([&]() {
+			QCoreApplication a(argc, argv);
+
+			wclient = new WebsocketPositionClient(options.websocketPort(), true);
+
+			QTimer *timer = new QTimer();
+			QObject::connect(timer, SIGNAL(timeout()), wclient, SLOT(sendPackets()));
+			timer->start(100);
+
+			// QTimer::singleShot(0, wclient, SLOT(sendPackets()));
+
+			a.exec();
+		});
 
 	std::unordered_set<double> freqs;
 	std::vector<v3> positionBuffer;
@@ -94,7 +111,8 @@ int main(int argc, char ** argv) {
 		for(auto pos : postProcessor.getPositions()) {
 			positionBuffer.push_back(pos.pos);
 
-			wclient.send(pos);
+			if(wclient != nullptr)
+				wclient->add(pos);
 
 			if(log)
 				log->log(pos.frequency, pos.pos);

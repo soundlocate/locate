@@ -28,6 +28,8 @@ void WebsocketPositionClient::onNewConnection()
 {
     QWebSocket *pSocket = m_pWebSocketServer->nextPendingConnection();
 
+	qDebug() << "client connected" << pSocket;
+
     connect(pSocket, &QWebSocket::disconnected, this, &WebsocketPositionClient::socketDisconnected);
 
     m_clients << pSocket;
@@ -44,6 +46,11 @@ void WebsocketPositionClient::socketDisconnected()
     }
 }
 
+int WebsocketPositionClient::add(Position pos) {
+	std::lock_guard<std::mutex> lock(positionMutex);
+
+	positions.push_back(pos);
+}
 
 int WebsocketPositionClient::send(Position pos) {
 	double data_conv[5];

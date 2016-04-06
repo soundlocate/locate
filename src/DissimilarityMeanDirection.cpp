@@ -75,7 +75,6 @@ Position DissimilarityMeanDirection::center(const Cluster & a) const {
 
 	anglex /= p.amplitude;
 	anglez /= p.amplitude;
-	p.amplitude /= a.objs.size();
 	p.frequency /= a.objs.size();
 
 	// spherical to cartesian (radius = 1)

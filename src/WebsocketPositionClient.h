@@ -6,6 +6,7 @@
 #include <mutex>
 #include <thread>
 #include <cstring>
+#include <deque>
 
 #include "Position.h"
 
@@ -14,6 +15,7 @@
 #include <QtCore/QByteArray>
 #include <QtWebSockets/qwebsocketserver.h>
 #include <QtWebSockets/qwebsocket.h>
+#include <QtCore>
 
 QT_FORWARD_DECLARE_CLASS(QWebSocketServer)
 QT_FORWARD_DECLARE_CLASS(QWebSocket)
@@ -27,17 +29,31 @@ public:
 
 	int send(Position pos);
 
+
+	int add(Position pos);
 Q_SIGNALS:
     void closed();
 
 private Q_SLOTS:
     void onNewConnection();
     void socketDisconnected();
+	void sendPackets() {
+		std::lock_guard<std::mutex> lock(positionMutex);
+
+		while(positions.size() > 0) {
+			send(positions[0]);
+			positions.pop_front();
+		}
+	}
 
 private:
     QWebSocketServer *m_pWebSocketServer;
     QList<QWebSocket *> m_clients;
     bool m_debug;
+
+	std::deque<Position> positions;
+
+	std::mutex positionMutex;
 };
 
 
