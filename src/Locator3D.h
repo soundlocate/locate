@@ -6,18 +6,22 @@
 #include <limits>
 #include <unordered_map>
 #include <cassert>
-
-#include "/opt/intel/mkl/include/mkl_lapacke.h"
+#include <iostream>
+#include <cassert>
 
 #include "util/constant.h"
 #include "util/types.h"
 #include "Microfone.h"
 #include "FFTPacket.h"
+#include "algorithms/Algorithm.h"
+#include "PositionRater.h"
 
-template<int numMics>
 class Locator3D {
 public:
-	Locator3D(std::array<Microfone, numMics> microfones): mics(microfones) {
+ Locator3D(std::vector<Microfone> microfones, std::vector<Algorithm *> a) : numMics(microfones.size()), mics(microfones), algorithms(a), rater(mics) {
+
+		assert(mics.size() == numMics);
+
 		std::cout << "numMics: " << numMics << std::endl;
 
         // calculate maximum frequency
@@ -46,130 +50,43 @@ public:
 		std::cout << "center: " << center << std::endl;
 	}
 
-	v3 locate(FFTPacket packet) {
-	    f64 freq = packet.sines[0].freq;
-		v3 d(f64Max, f64Max, f64Max);
-		v3 pos;
-	    u64 nitr = 0;
+	// test values (2, 2, 2)
+	/*
+	  freq = 171.15;
+	  x[0] = 2 * std::sqrt(3) - 2;
+	  x[1] = 1;
+	  x[2] = 0.7452;
+	  x[3] = 0.565017;
+	*/
 
-//		std::cout << "freq: " << freq << std::endl;
+	// locate a packet
+	v3 locate(FFTPacket packet) {
+		std::vector<v3> positions;
 
 		assert(packet.getSineCount() == numMics);
 
-		// use last position of this frequency, or if new freqency start at center
-		auto lastPos = lastPositions.find(freq);
-		if(lastPos != lastPositions.end()) {
-			pos = lastPos->second;
-		} else {
-			pos = center;
+		if(packet.sines[0].freq > maxFreq)
+			return v3(f64Max, f64Max, f64Max);
+
+		for(auto a : algorithms) {
+			positions.push_back(a->locate(mics, packet, center));
 		}
 
-//		std::cout << "initial guess: " << pos << std::endl;
+		// std::cout << packet.sines[0].freq << ":" << rater.bestPosition(positions, packet) << std::endl;
 
-		// calculate path differences
-		for(u64 i = 0; i < numMics; i++) {
-			x[i] = deltaPhaseToDistance(packet.sines[i].phase, packet.sines[0].phase, freq);
-//			std::cout << "x[" << i << "] = " << x[i] << std::endl;
-		}
-
-		// test values (2, 2, 2)
-		/*
-		freq = 171.15;
-		x[0] = 2 * std::sqrt(3) - 2;
-		x[1] = 1;
-		x[2] = 0.7452;
-		x[3] = 0.565017;
-		*/
-
-		while(d.norm() > accuracy) {
-			// calculate distance between mics and the current guess
-			for(u64 i = 0; i < numMics; i++) {
-				r[i] = (mics[i].pos - pos).norm();
-			}
-
-			// fill the matrix
-			for (int i = 0; i < numMics; i++) {
-				matrix[4 * i + 0] = (pos.x - mics[i].pos.x) / r[i];
-				matrix[4 * i + 1] = (pos.y - mics[i].pos.y) / r[i];
-				matrix[4 * i + 2] = (pos.z - mics[i].pos.z) / r[i];
-				matrix[4 * i + 3] = -1;
-			}
-
-			// fill the vector
-			for (int i = 0; i < numMics; i++) {
-				target[i] = x[i] - r[i];
-			}
-
-/* Debug output
-			for(int i = 0; i < numMics; i++) {
-				std::cout << matrix[4 * i + 0] << "\t"
-						  << matrix[4 * i + 1] << "\t"
-						  << matrix[4 * i + 2] << "\t"
-						  << matrix[4 * i + 3] << "\t\t"
-						  << target[i] << std::endl;
-			}
-*/
-
-			// solve least squares
-		    LAPACKE_dgelsd(LAPACK_ROW_MAJOR, numMics, 4, 1, matrix, numMics, target, 1, singular, -1, &rank);
-
-			// get dx, dy and dz
-			d = v3(target[0], target[1], target[2]);
-
-			// iterate position
-			pos += d;
-
-//			std::cout << "d: " << d << std::endl;
-//			std::cout << "pos: " << pos << std::endl;
-//			std::cout << "nitr: " << nitr << std::endl;
-
-			// it just does not converge
-			nitr++;
-			if(nitr > 50) {
-				std::cerr << "did not converge for freq: " << freq << std::endl;
-
-				// lets not save that one, it is totally wrong, lets also reset the lastPosition to center
-				lastPositions[freq] = center;
-				return pos;
-			}
-		}
-
-		// save this position as starting point for next time
-		lastPositions[freq] = pos;
-
-		return pos;
+		return rater.bestPosition(positions, packet);
 	};
 private:
-	f64 deltaPhaseToDistance(f64 a, f64 b, f64 freq) {
-	    f64 diff = b - a;
+  u64 numMics;
+  
+	std::vector<Microfone> mics;
+	std::vector<Algorithm *> algorithms;
+	PositionRater rater;
 
-
-		if(diff < -math::PI) {
-			diff += 2 * math::PI;
-		} else if(diff > math::PI) {
-			diff -= 2 * math::PI;
-		}
-
-		diff *= sound::speedInAir;
-		diff /= 2 * math::PI * freq;
-
-		return diff;
-	}
-
-	f64 accuracy = 0.001;
-
-	std::array<Microfone, numMics> mics;
-	std::unordered_map<f64, v3> lastPositions;
 	v3 center;
 	f64 maxFreq;
 
 	f64 f64Max = std::numeric_limits<f64>::max();
-	f64 target[4];
-	f64 singular[4];
-	f64 matrix[4 * numMics];
-	i32 rank;
-	f64 x[numMics];
-	f64 r[numMics];
 };
 
 #endif

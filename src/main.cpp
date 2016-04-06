@@ -1,6 +1,12 @@
 #include <iostream>
 #include <unordered_set>
 #include <vector>
+#include <fstream>
+#include <thread>
+#include <chrono>
+
+#include <cstdio>
+#include <ctime>
 
 #include "util/types.h"
 #include "util/constant.h"
@@ -10,60 +16,122 @@
 #include "Microfone.h"
 #include "PositionClient.h"
 #include "WebsocketPositionClient.h"
+#include "CommandLineOptions.h"
+#include "Logger.h"
+#include "algorithms/Algorithm.h"
+#include "algorithms/PhaseOnly.h"
+#include "PostProcessor.h"
+#include "RingBuffer.h"
 
+#include <Stopwatch.h>
+
+//ToDo(robin): implement log file
 int main(int argc, char ** argv) {
-	double distBetween = 0.56;
+	CommandLineOptions options(argc, argv);
 
-	std::array<Microfone, 4> mics = {
-			Microfone(0.0, 0.0, 0.0),
-			Microfone(0.0, distBetween , 0.0),
-			Microfone(sin((60.0 / 180.0) * math::PI) * distBetween , distBetween  / 2, 0.0),
-			Microfone(tan((30.0 / 180.0) * math::PI) * (distBetween / 2.0), distBetween  / 2.0, (1.0 / 3.0) * sqrt(6.0) * distBetween)
-	};
+	Stopwatch::getInstance().setCustomSignature(32436);
 
-	std::cout << "Microfones: " << std::endl << "[" << std::endl;
+	std::vector<Microfone> mics;
+	double * micTmp = options.mics();
 
-	for(int i = 0; i < 4; i++) {
+	for(u64 i = 0; i < options.micCount(); i++) {
+		mics.push_back(Microfone(micTmp[3 * i], micTmp[3 * i + 1], micTmp[3 * i + 2]));
+	}
+
+	Logger * log = nullptr;
+
+	if(options.log())
+		log = new Logger(options.logfilename());
+
+  	std::cout << "Microfones: " << std::endl << "[" << std::endl;
+    
+	for(u64 i = 0; i < options.micCount(); i++) {
 		std::cout << mics[i].pos << "," << std::endl;
 	}
 
 	std::cout << "]" << std::endl;
 
-	Locator3D<4> locator(mics);
-	FFTStream stream(argv[1], std::atoi(argv[2]));
-	PositionClient posClient(argv[3], std::atoi(argv[4]));
-	WebsocketPositionClient wclient(std::atoi(argv[5]));
+	std::vector<Algorithm *> algorithms;
+	algorithms.push_back((Algorithm *) new PhaseOnly(options.micCount(), options.accuracy()));
+
+	Locator3D locator( mics, algorithms);
+
+
+
+	// 0.2m maximum cluster size, 3 meanWindow, 10 maxKeep, 0.5 seconds value keep
+	// ToDo(robin):	finish value keep time support
+	PostProcessor postProcessor(mics, options.clusterSize(), locate::maxDist, options.dissimilarityFunction(),  options.meanWindow(), options.maxKeep(), options.keepTime());
+
+	// ToDo(robin): use ringbuffer and drop old packets
+	FFTStream stream(options.fftIp().c_str(), options.fftPort());
 
 	v3 pos;
+
+	PositionClient posClient(options.guiIp().c_str(), options.guiPort());
+	WebsocketPositionClient wclient(options.websocketPort());
 
 	std::unordered_set<double> freqs;
 	std::vector<v3> positionBuffer;
 
-	int i = 0;
+	// u64 i = 0;
 
+	TICK("locate_total");
 	for(auto packet : stream) {
-//		if(packet.sines[0].freq < 300 || packet.sines[0].freq > 1200)
-//			continue;
+		TOCK("locate_total");
+		TICK("locate_total");
 
+		TICK("locate_locate");
 		pos = locator.locate(packet);
-		positionBuffer.push_back(pos);
+		TOCK("locate_locate");
 
-		if(i % 5 == 0)
-			wclient.send(v4(packet.sines[0].freq, pos.x, pos.y, pos.z));
+		TICK("locate_other_bullshit");
 
-		// locate the shit and if it already exists send it out
-		if(!freqs.insert(packet.sines[0].freq).second) {
-			i++;
+		postProcessor.add(packet, pos);
 
-            // delete last position, it will be duplicate
-			positionBuffer.erase(positionBuffer.end() - 1);
+		positionBuffer.clear();
 
-			posClient.sendPositions(positionBuffer);
-		    freqs.clear();
-			positionBuffer.clear();
+		for(auto pos : postProcessor.getPositions()) {
+			positionBuffer.push_back(pos.pos);
 
-			// add last position as first new position
-			positionBuffer.push_back(pos);
+      wclient.send(v4(pos.frequency, pos.pos.x, pos.pos.y, pos.pos.z));
+
+			if(log)
+				log->log(pos.frequency, pos.pos);
 		}
+
+		posClient.sendPositions(positionBuffer);
+
+		// check for sensible values
+
+		// if(pos.norm() < locate::maxDist) {
+		// 	positionBuffer.push_back(pos);
+
+		// 	// write position to log
+		// 	if(log)
+		// 		log->log(packet.sines[0].freq, pos);
+
+		// 	// send position to the websocket clients
+		// 	wclient.send(v4(packet.sines[0].freq, pos.x, pos.y, pos.z));
+
+		// 	// locate the shit and if it already exists send it out
+		// 	if(!freqs.insert(packet.sines[0].freq).second) {
+		// 		i++;
+
+		// 		// delete last position, it will be duplicate
+		// 		positionBuffer.erase(positionBuffer.end() - 1);
+
+		// 		posClient.sendPositions(positionBuffer);
+		// 		freqs.clear();
+		// 		positionBuffer.clear();
+
+		// 		// add last position as first new position
+		// 		positionBuffer.push_back(pos);
+		// 	}
+		// }
+
+    
+		TOCK("locate_other_bullshit");
+
+		Stopwatch::getInstance().sendAll();
 	}
 }

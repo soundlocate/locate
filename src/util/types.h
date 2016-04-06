@@ -50,6 +50,13 @@ union Vector2D {
 		return vec;
 	}
 
+	template<typename scalaType>
+	Vector2D<valueType> operator*(const scalaType& rhs) const {
+		Vector2D<valueType> vec(*this);
+		vec *= rhs;
+		return vec;
+	}
+
 	Vector2D<valueType> operator-() const {
 		Vector2D<valueType> vec(*this);
 		vec -= Vector2D<valueType>();
@@ -66,6 +73,14 @@ union Vector2D {
 	Vector2D<valueType>& operator-=(const Vector2D<valueType>& rhs) {
 		this->x -= rhs.x;
 		this->y -= rhs.y;
+
+		return *this;
+	}
+
+	template<typename scalaType>
+	Vector2D<valueType>& operator*=(const scalaType& rhs) {
+		this->x *= rhs;
+		this->y *= rhs;
 
 		return *this;
 	}
@@ -127,6 +142,12 @@ union Vector3D {
 		return vec;
 	}
 
+	template<typename scalaType>
+	Vector3D<valueType> operator*(const scalaType& rhs) const {
+		Vector3D<valueType> vec(*this);
+		vec *= rhs;
+		return vec;
+	}
 
 	Vector3D<valueType>& operator+=(const Vector3D<valueType>& rhs) {
 		this->x += rhs.x;
@@ -145,6 +166,15 @@ union Vector3D {
 	}
 
 	template<typename scalaType>
+	Vector3D<valueType>& operator*=(const scalaType& rhs) {
+		this->x *= rhs;
+		this->y *= rhs;
+		this->z *= rhs;
+
+		return *this;
+	}
+
+	template<typename scalaType>
 	Vector3D<valueType>& operator/=(const scalaType& rhs) {
 		this->x /= rhs;
 		this->y /= rhs;
@@ -157,7 +187,7 @@ union Vector3D {
 		return (this->x == rhs.x) && (this->y == rhs.y) && (this->z == rhs.z);
 	}
 
-	auto norm() -> decltype(x * x + y * y + z * z) {
+	auto norm() const -> decltype(x * x + y * y + z * z) {
 		return std::sqrt(x * x + y * y + z * z);
 	}
 };
@@ -198,6 +228,13 @@ union Vector4D {
 		return vec;
 	}
 
+	template<typename scalaType>
+	Vector4D<valueType> operator*(const scalaType& rhs) const {
+		Vector4D<valueType> vec(*this);
+		vec *= rhs;
+		return vec;
+	}
+
 	Vector4D<valueType> operator-() const {
 		Vector4D<valueType> vec(*this);
 		vec -= Vector4D<valueType>();
@@ -223,6 +260,16 @@ union Vector4D {
 	}
 
 	template<typename scalaType>
+	Vector4D<valueType>& operator*=(const scalaType& rhs) {
+		this->x *= rhs;
+		this->y *= rhs;
+		this->z *= rhs;
+		this->w *= rhs;
+
+		return *this;
+	}
+
+	template<typename scalaType>
 	Vector4D<valueType>& operator/=(const scalaType& rhs) {
 		this->x /= rhs;
 		this->y /= rhs;
@@ -231,7 +278,6 @@ union Vector4D {
 
 		return *this;
 	}
-
 
 	bool operator==(const Vector4D<valueType>& rhs) const {
 		return (this->x == rhs.x) && (this->y == rhs.y) && (this->z == rhs.z) && (this->w == rhs.w);

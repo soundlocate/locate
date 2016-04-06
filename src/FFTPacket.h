@@ -14,10 +14,11 @@ public:
 		Sinus() : freq(0), phase(0), amplitude(0) {}
 
 		Sinus(char * rawData) {
+			assert(rawData != nullptr);
+
 			memcpy(&freq, &rawData[0], sizeof(double));
 			memcpy(&phase, &rawData[sizeof(double)], sizeof(double));
 			memcpy(&amplitude, &rawData[2 * sizeof(double)], sizeof(double));
-			assert(rawData != nullptr);
 		}
 
 		bool operator==(const Sinus & rhs) const {
@@ -70,7 +71,7 @@ public:
 		bool result = true;
 
 		if(sineCount == rhs.sineCount) {
-			for(int i = 0; i < sineCount; i++) {
+			for(unsigned int i = 0; i < sineCount; i++) {
 				result = result && (sines[i] == rhs.sines[i]);
 			}
 
@@ -84,7 +85,7 @@ public:
 		bool result = false;
 
 		if(sineCount == rhs.sineCount) {
-			for(int i = 0; i < sineCount; i++) {
+			for(unsigned int i = 0; i < sineCount; i++) {
 				result = result || (sines[i] != rhs.sines[i]);
 			}
 
@@ -97,7 +98,7 @@ public:
 	double meanAmplitude() {
 		double sum = 0;
 
-		for (int i = 0; i < sineCount; i++) {
+		for (unsigned int i = 0; i < sineCount; i++) {
 			sum += sines[i].amplitude;
 		}
 

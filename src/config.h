@@ -13,12 +13,13 @@
 #define APPLICATION_COPYRIGHT_YEARS    "2016"
 #define APPLICATION_VERSION_MAJOR      1
 /* #undef APPLICATION_VERSION_MINOR */
-/* #undef APPLICATION_VERSION_PATCH */
-#define APPLICATION_VERSION_TYPE       "SNAPSHOT"
-#define APPLICATION_VERSION_STRING     "1.0.0-SNAPSHOT"
+#define APPLICATION_VERSION_PATCH      1
+#define APPLICATION_VERSION_TYPE       "ALPHA"
+#define APPLICATION_VERSION_STRING     "1.0.1-ALPHA"
 #define APPLICATION_VENDOR_ID          "de.sfn_kassel"
 #define APPLICATION_VENDOR_NAME        "Schülerforschungszentrum Nordhessen"
 #define APPLICATION_VENDOR_URL         "www.sfn-kassel.de"
+#define APPLICATION_VENDOR_EMAIL       "schallortung@gmail.com"
 #define APPLICATION_ID                 "de.sfn_kassel"
 
 #ifndef APPLICATION_NAME
