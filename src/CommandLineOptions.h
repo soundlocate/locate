@@ -190,6 +190,8 @@ private:
 				std::cerr << "invalid dissimilarity function " << arg << std::endl;
 				argp_usage(state);
 			}
+
+			break;
 		}
 		case 'd': {
 			std::string s(arg);

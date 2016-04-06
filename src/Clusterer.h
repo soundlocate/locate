@@ -67,7 +67,7 @@ public:
 		} while(hasMerged); /* try and merge clusters until no cluster gets merged anymore */
 
 		for(auto cluster : pos) {
-			clusters.push_back(cluster.center());
+			clusters.push_back(dissimilarity->center(cluster));
 		}
 
 		return clusters;

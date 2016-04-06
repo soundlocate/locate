@@ -60,30 +60,41 @@ public:
 		return dissimilarity < maxClusterSize;
 	}
 
-	Position center(const Cluster & a) const {
+	Position center(const Cluster & a) const override {
 		Position p;
-		p.amplitude = 0;
-		p.frequency = 0;
-		p.pos = v3();
 		f64 anglex = 0;
 		f64 anglez = 0;
 		v3 xaxis(1, 0, 0);
 		v3 zaxis(0, 0, 1);
+		v3 tmp;
 
+		p.amplitude = 0;
+		p.frequency = 0;
+		p.pos = v3();
+
+		// cartesian to spherical (radius = 1)
 		for(auto pos : a.objs) {
-			anglex += angleBetween(pos.pos, xaxis);
-			anglez += angleBetween(pos.pos, zaxis);
+			tmp = pos.pos - micCenter;
+			std::cout << pos.pos << std::endl;
+			anglex += std::atan2(tmp.y, tmp.x);
+			anglez += std::acos(tmp.z / tmp.norm());
+
 			p.amplitude += pos.amplitude;
 			p.frequency += pos.frequency;
 		}
 
 		anglex /= a.objs.size();
 		anglez /= a.objs.size();
+		p.amplitude /= a.objs.size();
+		p.frequency /= a.objs.size();
 
 		// spherical to cartesian (radius = 1)
 		p.pos.x = sin(anglez) * cos(anglex);
 		p.pos.y = sin(anglez) * sin(anglex);
-		p.pos.z = sin(anglez);
+		p.pos.z = cos(anglez);
+
+		// ToDo(robin): better solution??
+		p.pos += micCenter;
 
 		return p;
 	}
