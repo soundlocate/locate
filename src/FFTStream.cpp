@@ -71,7 +71,7 @@ FFTPacket& FFTStream::operator*() {
 	return currentPacket;
 }
 
-FFTStream& FFTStream::begin() {
+FFTStream FFTStream::begin() {
 	return *this;
 }
 

@@ -24,7 +24,7 @@ public:
 
     FFTPacket& operator*();
 
-    FFTStream& begin();
+    FFTStream begin();
 
     FFTStream end();
 

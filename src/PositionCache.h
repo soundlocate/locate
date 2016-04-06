@@ -14,7 +14,7 @@ public:
 
 	u64 size();
 
-	Position& nextPosition();
+	Position nextPosition();
 
     u64 rewind();
 private:

@@ -18,7 +18,7 @@ u64 PositionCache::size() {
 	return size;
 }
 
-Position & PositionCache::nextPosition() {
+Position PositionCache::nextPosition() {
 	if(ppos > (data.size() - 1))
 		throw oobex;
 
@@ -33,9 +33,12 @@ Position & PositionCache::nextPosition() {
 		} while(data[ppos].getPositions().size() == 0);
 	}
 
+	Position pos;
+	pos = data[ppos].getPositions()[fpos];
+
 	fpos++;
 
-	return data[ppos].getPositions()[fpos];
+	return pos;
 }
 
 u64 PositionCache::rewind() {

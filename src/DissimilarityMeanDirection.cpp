@@ -67,15 +67,15 @@ Position DissimilarityMeanDirection::center(const Cluster & a) const {
 	// cartesian to spherical (radius = 1)
 	for(auto pos : a.objs) {
 		tmp = pos.pos - micCenter;
-		anglex += std::atan2(tmp.y, tmp.x);
-		anglez += std::acos(tmp.z / tmp.norm());
+		anglex += std::atan2(tmp.y, tmp.x) * pos.amplitude;
+		anglez += std::acos(tmp.z / tmp.norm()) * pos.amplitude;
 
 		p.amplitude += pos.amplitude;
 		p.frequency += pos.frequency;
 	}
 
-	anglex /= a.objs.size();
-	anglez /= a.objs.size();
+	anglex /= p.amplitude;
+	anglez /= p.amplitude;
 	p.amplitude /= a.objs.size();
 	p.frequency /= a.objs.size();
 
