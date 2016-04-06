@@ -7,32 +7,38 @@
 #include <thread>
 #include <cstring>
 
-#include <websocketpp/config/asio_no_tls.hpp>
-#include <websocketpp/server.hpp>
+#include "Position.h"
 
-#include "util/types.h"
+#include <QtCore/QObject>
+#include <QtCore/QList>
+#include <QtCore/QByteArray>
+#include <QtWebSockets/qwebsocketserver.h>
+#include <QtWebSockets/qwebsocket.h>
 
-using websocketpp::lib::placeholders::_1;
-using websocketpp::lib::placeholders::_2;
-using websocketpp::lib::bind;
+QT_FORWARD_DECLARE_CLASS(QWebSocketServer)
+QT_FORWARD_DECLARE_CLASS(QWebSocket)
 
-class WebsocketPositionClient {
+class WebsocketPositionClient : public QObject
+{
+    Q_OBJECT
 public:
-	WebsocketPositionClient(unsigned short port);
+    explicit WebsocketPositionClient(quint16 port, bool debug = false, QObject *parent = Q_NULLPTR);
+    ~WebsocketPositionClient();
 
-	int send(v4 pos);
+	int send(Position pos);
 
-	~WebsocketPositionClient();
+Q_SIGNALS:
+    void closed();
+
+private Q_SLOTS:
+    void onNewConnection();
+    void socketDisconnected();
+
 private:
-	typedef websocketpp::server<websocketpp::config::asio> websocket_server;
-
-	websocket_server server;
-	std::set<websocketpp::connection_hdl, std::owner_less<websocketpp::connection_hdl>> connections;
-	std::mutex mutex;
-
-	void on_open(websocketpp::connection_hdl hdl);
-
-	void on_close(websocketpp::connection_hdl hdl);
+    QWebSocketServer *m_pWebSocketServer;
+    QList<QWebSocket *> m_clients;
+    bool m_debug;
 };
+
 
 #endif

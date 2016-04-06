@@ -51,7 +51,6 @@ u64 DissimilarityMeanDirection::shouldMerge(const f64 & dissimilarity, const Clu
 	return dissimilarity < maxClusterSize;
 }
 
-// ToDo(robin): use weighting by amplitude
 Position DissimilarityMeanDirection::center(const Cluster & a) const {
 	Position p;
 	f64 anglex = 0;

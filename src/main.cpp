@@ -68,6 +68,7 @@ int main(int argc, char ** argv) {
 	v3 pos;
 
 	PositionClient posClient(options.guiIp().c_str(), options.guiPort());
+
 	WebsocketPositionClient wclient(options.websocketPort());
 
 	std::unordered_set<double> freqs;
@@ -93,7 +94,7 @@ int main(int argc, char ** argv) {
 		for(auto pos : postProcessor.getPositions()) {
 			positionBuffer.push_back(pos.pos);
 
-      wclient.send(v4(pos.frequency, pos.pos.x, pos.pos.y, pos.pos.z));
+			wclient.send(pos);
 
 			if(log)
 				log->log(pos.frequency, pos.pos);

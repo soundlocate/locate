@@ -1,53 +1,76 @@
 #include "WebsocketPositionClient.h"
 
-WebsocketPositionClient::WebsocketPositionClient(unsigned short port) {
-	assert(port != 0);
+QT_USE_NAMESPACE
 
-	server.clear_access_channels(websocketpp::log::alevel::all);
-	server.set_open_handler(bind(&WebsocketPositionClient::on_open, this, ::_1));
-	server.set_close_handler(bind(&WebsocketPositionClient::on_close, this, ::_1));
-
-	server.init_asio();
-	server.listen(port);
-	server.start_accept();
-
-	std::cout << "binding websocket to " << port << std::endl;
-
-	std::thread t([&]() {
-			server.run();
-		});
-	t.detach();
+WebsocketPositionClient::WebsocketPositionClient(quint16 port, bool debug, QObject *parent) :
+    QObject(parent),
+    m_pWebSocketServer(new QWebSocketServer(QStringLiteral("Echo Server"),
+                                            QWebSocketServer::NonSecureMode, this)),
+    m_clients(),
+    m_debug(debug)
+{
+    if (m_pWebSocketServer->listen(QHostAddress::Any, port)) {
+        if (m_debug)
+            qDebug() << "Echoserver listening on port" << port;
+        connect(m_pWebSocketServer, &QWebSocketServer::newConnection,
+                this, &WebsocketPositionClient::onNewConnection);
+        connect(m_pWebSocketServer, &QWebSocketServer::closed, this, &WebsocketPositionClient::closed);
+    }
 }
 
-int WebsocketPositionClient::send(v4 pos) {
-	std::lock_guard<std::mutex> lock(mutex);
+WebsocketPositionClient::~WebsocketPositionClient()
+{
+    m_pWebSocketServer->close();
+    qDeleteAll(m_clients.begin(), m_clients.end());
+}
 
-	double * data_conv[4];
+void WebsocketPositionClient::onNewConnection()
+{
+    QWebSocket *pSocket = m_pWebSocketServer->nextPendingConnection();
+
+    connect(pSocket, &QWebSocket::disconnected, this, &WebsocketPositionClient::socketDisconnected);
+
+    m_clients << pSocket;
+}
+
+void WebsocketPositionClient::socketDisconnected()
+{
+    QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
+    if (m_debug)
+        qDebug() << "socketDisconnected:" << pClient;
+    if (pClient) {
+        m_clients.removeAll(pClient);
+        pClient->deleteLater();
+    }
+}
+
+
+int WebsocketPositionClient::send(Position pos) {
+	double data_conv[5];
 	int64_t orig = 0, res = 0;
 
-	for (int i = 0; i < 4; i++) {
-		memcpy(&orig, &pos.comp[i], sizeof(double));
+	// position
+	for (int i = 0; i < 3; i++) {
+		memcpy(&orig, &pos.pos.comp[i], sizeof(double));
 		res = __builtin_bswap64(orig);
 		memcpy(&data_conv[i], &res, sizeof(double));
 	}
 
-	for(auto hdl : connections) {
-		server.send(hdl, data_conv, 4 * sizeof(double), websocketpp::frame::opcode::binary);
+	// amplitude
+	memcpy(&orig, &pos.amplitude, sizeof(double));
+	res = __builtin_bswap64(orig);
+	memcpy(&data_conv[3], &res, sizeof(double));
+
+	// frequency
+	memcpy(&orig, &pos.frequency, sizeof(double));
+	res = __builtin_bswap64(orig);
+	memcpy(&data_conv[4], &res, sizeof(double));
+
+
+	for(auto client : m_clients) {
+		client->sendBinaryMessage(QByteArray::fromRawData((char *) &data_conv[0], sizeof(double) * 5));
+		// server.send(hdl, data_conv, 5 * sizeof(double), websocketpp::frame::opcode::binary);
 	}
 
 	return 0;
-}
-
-WebsocketPositionClient::~WebsocketPositionClient() {
-	server.stop();
-}
-
-void WebsocketPositionClient::on_open(websocketpp::connection_hdl hdl) {
-	std::lock_guard<std::mutex> lock(mutex);
-	connections.insert(hdl);
-}
-
-void WebsocketPositionClient::on_close(websocketpp::connection_hdl hdl) {
-	std::lock_guard<std::mutex> lock(mutex);
-	connections.erase(hdl);
 }
