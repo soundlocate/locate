@@ -23,6 +23,7 @@
 #include "algorithms/PhaseOnly.h"
 #include "PostProcessor.h"
 #include "RingBuffer.h"
+#include "ThreadedLocator.h"
 
 #include <QtCore/QCoreApplication>
 
@@ -30,39 +31,10 @@
 int main(int argc, char ** argv) {
 	CommandLineOptions options(argc, argv);
 
-	std::vector<Microfone> mics;
-	double * micTmp = options.mics();
-
-	for(u64 i = 0; i < options.micCount(); i++) {
-		mics.push_back(Microfone(micTmp[3 * i], micTmp[3 * i + 1], micTmp[3 * i + 2]));
-	}
-
 	// logger
 	Logger * log = nullptr;
 	if(options.log())
 		log = new Logger(options.logfilename());
-
-  	std::cout << "Microfones: " << std::endl << "[" << std::endl;
-    
-	for(u64 i = 0; i < options.micCount(); i++) {
-		std::cout << mics[i].pos << "," << std::endl;
-	}
-
-	std::cout << "]" << std::endl;
-
-	// locate algorithms
-	std::vector<Algorithm *> algorithms;
-	algorithms.push_back((Algorithm *) new PhaseOnly(options.micCount(), options.accuracy()));
-
-	Locator3D locator( mics, algorithms);
-
-	// postprocessor
-	PostProcessor postProcessor(mics, options.clusterSize(), locate::maxDist, options.dissimilarityFunction(),  options.meanWindow(), options.maxKeep(), options.keepTime());
-
-	// ToDo(robin): use ringbuffer and drop old packets
-	FFTStream stream(options.fftIp().c_str(), options.fftPort());
-
-	v3 pos;
 
 	PositionClient posClient(options.guiIp().c_str(), options.guiPort());
 
@@ -80,19 +52,16 @@ int main(int argc, char ** argv) {
 			a.exec();
 		});
 
-	std::unordered_set<double> freqs;
 	std::vector<v3> positionBuffer;
 
 	// u64 i = 0;
 
-	for(const auto & packet : stream) {
-		pos = locator.locate(packet);
+	ThreadedLocator<12> locator(options);
 
-		postProcessor.add(packet, pos);
-
+	while(true) {
 		positionBuffer.clear();
 
-		for(auto pos : postProcessor.getPositions()) {
+		for(auto pos : locator.getPositions()) {
 			positionBuffer.push_back(pos.pos);
 
 			if(wclient != nullptr)
@@ -104,32 +73,6 @@ int main(int argc, char ** argv) {
 
 		posClient.sendPositions(positionBuffer);
 
-		// check for sensible values
-
-		// if(pos.norm() < locate::maxDist) {
-		// 	positionBuffer.push_back(pos);
-
-		// 	// write position to log
-		// 	if(log)
-		// 		log->log(packet.sines[0].freq, pos);
-
-		// 	// send position to the websocket clients
-		// 	wclient.send(v4(packet.sines[0].freq, pos.x, pos.y, pos.z));
-
-		// 	// locate the shit and if it already exists send it out
-		// 	if(!freqs.insert(packet.sines[0].freq).second) {
-		// 		i++;
-
-		// 		// delete last position, it will be duplicate
-		// 		positionBuffer.erase(positionBuffer.end() - 1);
-
-		// 		posClient.sendPositions(positionBuffer);
-		// 		freqs.clear();
-		// 		positionBuffer.clear();
-
-		// 		// add last position as first new position
-		// 		positionBuffer.push_back(pos);
-		// 	}
-		// }
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 }

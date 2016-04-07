@@ -7,15 +7,20 @@ class IndexOutOfBoundsException : public std::exception {
 		}
 } oobex;
 
-PositionCache::PositionCache(std::vector<FrequencyCache> & data) : data(data) {}
+PositionCache::PositionCache(std::vector<FrequencyCache> & data) : data(data) {
+	m_size = 0;
+	for(auto fcache : data) {
+		m_size += fcache.getPositions().size();
+	}
+}
 
 u64 PositionCache::size() {
-	u64 size = 0;
+	m_size = 0;
 	for(auto fcache : data) {
-		size += fcache.getPositions().size();
+		m_size += fcache.getPositions().size();
 	}
 
-	return size;
+	return m_size;
 }
 
 Position PositionCache::nextPosition() {

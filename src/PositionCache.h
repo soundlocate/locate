@@ -20,6 +20,7 @@ public:
 private:
 	u64 fpos = 0;
 	u64 ppos = 0;
+	u64 m_size = 0;
 
 	std::vector<FrequencyCache> data;
 };
