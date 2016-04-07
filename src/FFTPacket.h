@@ -4,6 +4,8 @@
 #include <cassert>
 #include <cstring>
 
+#include <iostream>
+
 class FFTPacket {
 public:
 	struct Sinus {
@@ -36,10 +38,6 @@ public:
 
 	FFTPacket(char * rawData, unsigned int count);
 
-    FFTPacket(const FFTPacket& other);
-
-    FFTPacket& operator=(const FFTPacket& other);
-
 	bool operator==(const FFTPacket & rhs) const;
 
 	bool operator!=(const FFTPacket & rhs) const;
@@ -47,9 +45,6 @@ public:
 	double meanAmplitude();
 
 	unsigned int getSineCount();
-
-	~FFTPacket();
-
 private:
 	unsigned int sineCount = 0;
 };

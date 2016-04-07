@@ -26,13 +26,9 @@
 
 #include <QtCore/QCoreApplication>
 
-#include <Stopwatch.h>
-
 //ToDo(robin): implement log file
 int main(int argc, char ** argv) {
 	CommandLineOptions options(argc, argv);
-
-	Stopwatch::getInstance().setCustomSignature(32436);
 
 	std::vector<Microfone> mics;
 	double * micTmp = options.mics();
@@ -41,8 +37,8 @@ int main(int argc, char ** argv) {
 		mics.push_back(Microfone(micTmp[3 * i], micTmp[3 * i + 1], micTmp[3 * i + 2]));
 	}
 
+	// logger
 	Logger * log = nullptr;
-
 	if(options.log())
 		log = new Logger(options.logfilename());
 
@@ -54,15 +50,13 @@ int main(int argc, char ** argv) {
 
 	std::cout << "]" << std::endl;
 
+	// locate algorithms
 	std::vector<Algorithm *> algorithms;
 	algorithms.push_back((Algorithm *) new PhaseOnly(options.micCount(), options.accuracy()));
 
 	Locator3D locator( mics, algorithms);
 
-
-
-	// 0.2m maximum cluster size, 3 meanWindow, 10 maxKeep, 0.5 seconds value keep
-	// ToDo(robin):	finish value keep time support
+	// postprocessor
 	PostProcessor postProcessor(mics, options.clusterSize(), locate::maxDist, options.dissimilarityFunction(),  options.meanWindow(), options.maxKeep(), options.keepTime());
 
 	// ToDo(robin): use ringbuffer and drop old packets
@@ -83,8 +77,6 @@ int main(int argc, char ** argv) {
 			QObject::connect(timer, SIGNAL(timeout()), wclient, SLOT(sendPackets()));
 			timer->start(100);
 
-			// QTimer::singleShot(0, wclient, SLOT(sendPackets()));
-
 			a.exec();
 		});
 
@@ -93,16 +85,8 @@ int main(int argc, char ** argv) {
 
 	// u64 i = 0;
 
-	TICK("locate_total");
-	for(auto packet : stream) {
-		TOCK("locate_total");
-		TICK("locate_total");
-
-		TICK("locate_locate");
+	for(const auto & packet : stream) {
 		pos = locator.locate(packet);
-		TOCK("locate_locate");
-
-		TICK("locate_other_bullshit");
 
 		postProcessor.add(packet, pos);
 
@@ -147,10 +131,5 @@ int main(int argc, char ** argv) {
 		// 		positionBuffer.push_back(pos);
 		// 	}
 		// }
-
-    
-		TOCK("locate_other_bullshit");
-
-		Stopwatch::getInstance().sendAll();
 	}
 }

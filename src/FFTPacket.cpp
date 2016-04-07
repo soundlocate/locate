@@ -2,42 +2,18 @@
 
 FFTPacket::FFTPacket() : sineCount(0) {}
 
+// Note(robin): not really thread safe -> does not copy rawData
 FFTPacket::FFTPacket(char * rawData, unsigned int count) : sineCount(count) {
 	assert(count != 0);
 	assert(rawData != nullptr);
 
-	sines = new Sinus[count];
-
-	memcpy(sines, rawData, sizeof(Sinus) * count);
-
-	//for(int i = 0; i < count; i++) {
-	//	sines[i] = Sinus(rawData); // new sinus from rawdata
-	//	rawData += sizeof(Sinus);  // increment pointer to rawdata,
-	// so that it points to the data of the next sinus
-	//}
-}
-
-FFTPacket::FFTPacket(const FFTPacket& other) :
-	sines(new Sinus[other.sineCount]), sineCount(other.sineCount) {
-	std::memcpy(sines, other.sines, sineCount * sizeof(Sinus));
-}
-
-
-FFTPacket& FFTPacket::operator=(const FFTPacket& other) {
-	if (this != &other) {
-		if(sineCount > 0)
-			delete[] sines;
-
-		sines = new Sinus[other.sineCount];
-		std::memcpy(sines, other.sines, other.sineCount * sizeof(Sinus));
-		sineCount = other.sineCount;
-	}
-
-	return *this;
+	sines = (Sinus *) rawData;
 }
 
 bool FFTPacket::operator==(const FFTPacket & rhs) const {
 	bool result = true;
+
+	std::cout << "fftpacket operator==" << std::endl;
 
 	if(sineCount == rhs.sineCount) {
 		for(unsigned int i = 0; i < sineCount; i++) {
@@ -52,6 +28,8 @@ bool FFTPacket::operator==(const FFTPacket & rhs) const {
 
 bool FFTPacket::operator!=(const FFTPacket & rhs) const {
 	bool result = false;
+
+	std::cout << "fftpacket operator!=" << std::endl;
 
 	if(sineCount == rhs.sineCount) {
 		for(unsigned int i = 0; i < sineCount; i++) {
@@ -76,10 +54,4 @@ double FFTPacket::meanAmplitude() {
 
 unsigned int FFTPacket::getSineCount() {
 	return sineCount;
-}
-
-FFTPacket::~FFTPacket() {
-	if(sineCount > 0) {
-		delete[] sines;
-	}
 }

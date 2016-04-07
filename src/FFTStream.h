@@ -4,17 +4,19 @@
 #include <cstring>
 
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 #include <SFML/Network.hpp>
 
-
+#include "DoubleRingBuffer.h"
 #include "FFTPacket.h"
 
 class FFTStream : public std::iterator<std::input_iterator_tag, FFTPacket> {
 public:
 	FFTStream(const char * ip, unsigned short port);
 
-	unsigned int numMics();;
+	unsigned int & numMics();;
 
 	FFTStream& operator++();
 
@@ -24,9 +26,9 @@ public:
 
     FFTPacket& operator*();
 
-    FFTStream begin();
+    FFTStream& begin();
 
-    FFTStream end();
+    FFTStream& end();
 
 	enum FFTSteamStatus {
 		disconnected,
@@ -36,6 +38,10 @@ public:
 
 private:
 	FFTStream(FFTSteamStatus newStatus);
+	DoubleRingBuffer<FFTPacket::Sinus> * buffer;
+	std::thread * handle;
+
+	std::size_t to_receive_size;
 
 	sf::TcpSocket * server;
 	unsigned int numMic;
