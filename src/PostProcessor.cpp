@@ -8,17 +8,17 @@ PostProcessor::PostProcessor(std::vector<Microfone> mics, const f64 maxClusterSi
 			  (Dissimilarity *) new DissimilarityMeanDirection(mics, maxClusterSize) :
 			  (Dissimilarity *) new DissimilarityMeanDist(maxClusterSize)),
 	positionBuffer(meanWindow, maxKeep), mics(mics), maxDist(maxDist),
-	meanWindow(meanWindow), maxKeep(maxKeep), keepTime(keepTime) {}
+	numMics(mics.size()), meanWindow(meanWindow), maxKeep(maxKeep), keepTime(keepTime) {}
 
-u64 PostProcessor::add(FFTPacket p, v3 pos) {
+u64 PostProcessor::add(FFTPacket::Sinus * p, v3 pos) {
 	if(pos.norm() > maxDist
 	   || std::isnan(pos.x) || std::isnan(pos.y) || std::isnan(pos.z)
 	   || std::isinf(pos.x) || std::isinf(pos.y) || std::isinf(pos.z))
 		return 1;
 
 	Position position;
-	position.frequency = p.sines[0].freq;
-	position.amplitude = p.meanAmplitude();
+	position.frequency = p[0].freq;
+	position.amplitude = FFTPacket::meanAmplitude(p, numMics);
 	position.pos = pos;
 
 	positionBuffer.add(position);

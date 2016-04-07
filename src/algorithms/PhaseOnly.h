@@ -16,7 +16,7 @@ class PhaseOnly : public Algorithm {
 public:
 	PhaseOnly(u64 numMics, f64 accuracy);
 
-	v3 locate(std::vector<Microfone> mics, FFTPacket p, v3 center) override;
+	v3 locate(std::vector<Microfone> mics, FFTPacket::Sinus * p, v3 center) override;
 
 	~PhaseOnly();
 private:

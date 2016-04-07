@@ -77,7 +77,7 @@ unsigned int & FFTStream::numMics() {
 
 FFTStream& FFTStream::operator++() {
 	// convert raw data into packet
-	currentPacket = FFTPacket((char *) buffer->popPtr(), numMic);
+	currentPacket = buffer->popPtr();
 
 	return *this;
 }
@@ -92,7 +92,7 @@ bool FFTStream::operator!=(const FFTStream& rhs) {
 	return true;
 }
 
-FFTPacket& FFTStream::operator*() {
+FFTPacket::Sinus * FFTStream::operator*() {
 	return currentPacket;
 }
 

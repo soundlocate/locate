@@ -24,7 +24,7 @@ public:
 
 	bool operator!=(const FFTStream& rhs);
 
-    FFTPacket& operator*();
+	FFTPacket::Sinus * operator*();
 
     FFTStream& begin();
 
@@ -45,7 +45,7 @@ private:
 
 	sf::TcpSocket * server;
 	unsigned int numMic;
-	FFTPacket currentPacket;
+	FFTPacket::Sinus * currentPacket;
 	FFTSteamStatus status = disconnected;
 };
 

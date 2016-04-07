@@ -20,7 +20,7 @@ public:
 				  const u64 dissimilarity, const u64 meanWindow, const u64 maxKeep,
 				  const f64 keepTime);
 
-	u64 add(FFTPacket p, v3 pos);
+	u64 add(FFTPacket::Sinus * p, v3 pos);
 
 	std::vector<Position> & getPositions();
 private:
@@ -31,6 +31,7 @@ private:
 
 	f64 maxDist;
 
+	u64 numMics;
 	u64 meanWindow;
 	u64 maxKeep;
 	u64 counter;

@@ -34,12 +34,10 @@ Locator3D::Locator3D(std::vector<Microfone> microfones, std::vector<Algorithm *>
 
 
 // locate a packet
-v3 Locator3D::locate(FFTPacket packet) {
+v3 Locator3D::locate(FFTPacket::Sinus * packet) {
 	std::vector<v3> positions;
 
-	assert(packet.getSineCount() == numMics);
-
-	if(packet.sines[0].freq > maxFreq)
+	if(packet[0].freq > maxFreq)
 		return v3(f64Max, f64Max, f64Max);
 
 	for(auto a : algorithms) {

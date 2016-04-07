@@ -20,7 +20,7 @@ class Locator3D {
 public:
 	Locator3D(std::vector<Microfone> microfones, std::vector<Algorithm *> a);
 
-	v3 locate(FFTPacket packet);
+	v3 locate(FFTPacket::Sinus * packet);
 private:
 	u64 numMics;
   

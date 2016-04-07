@@ -8,15 +8,15 @@ PhaseOnly::PhaseOnly(u64 numMics, f64 accuracy) : numMics(numMics), accuracy(acc
 	r = (f64 *) malloc(sizeof(f64) * numMics);
 }
 
-v3 PhaseOnly::locate(std::vector<Microfone> mics, FFTPacket p, v3 center) {
-	f64 freq = p.sines[0].freq;
+v3 PhaseOnly::locate(std::vector<Microfone> mics, FFTPacket::Sinus * p, v3 center) {
+	f64 freq = p[0].freq;
 	v3 d(f64Max, f64Max, f64Max);
 	v3 pos;
 	u64 nitr = 0;
 
 	// calculate path differences
 	for(u64 i = 0; i < numMics; i++) {
-		x[i] = math::deltaPhaseToDistance(p.sines[i].phase, p.sines[0].phase, freq);
+		x[i] = math::deltaPhaseToDistance(p[i].phase, p[0].phase, freq);
 	}
 
 	// use last position of this frequency, or if new freqency start at center

@@ -42,14 +42,14 @@ bool FFTPacket::operator!=(const FFTPacket & rhs) const {
 	}
 }
 
-double FFTPacket::meanAmplitude() {
+f64 FFTPacket::meanAmplitude(Sinus * sines, u64 numMics) {
 	double sum = 0;
 
-	for (unsigned int i = 0; i < sineCount; i++) {
+	for (unsigned int i = 0; i < numMics; i++) {
 		sum += sines[i].amplitude;
 	}
 
-	return sum / sineCount;
+	return sum / numMics;
 }
 
 unsigned int FFTPacket::getSineCount() {

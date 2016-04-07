@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+#include "util/types.h"
+
 class FFTPacket {
 public:
 	struct Sinus {
@@ -42,7 +44,7 @@ public:
 
 	bool operator!=(const FFTPacket & rhs) const;
 
-	double meanAmplitude();
+	static f64 meanAmplitude(Sinus * s, u64 numMics);
 
 	unsigned int getSineCount();
 private:
