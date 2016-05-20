@@ -8,12 +8,12 @@
 
 class Cluster {
 public:
-	std::vector<Position> objs;
+    std::vector<Position> objs;
 
-	Cluster(Position p);
+    Cluster(Position p);
 
-	u64 merge(Cluster other);
+    u64 merge(Cluster other);
 
-	Position center() const;
+    Position center() const;
 };
 #endif

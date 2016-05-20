@@ -5,11 +5,11 @@
 
 class Microfone {
 public:
-	Microfone(): pos() {};
-	Microfone(v3 position): pos(position) {};
-	Microfone(double x, double y, double z) : pos(x, y, z) {};
+    Microfone() : pos(){};
+    Microfone(v3 position) : pos(position){};
+    Microfone(double x, double y, double z) : pos(x, y, z){};
 
-	v3 pos;
+    v3 pos;
 };
 
 #endif

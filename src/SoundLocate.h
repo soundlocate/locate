@@ -3,7 +3,7 @@
 
 class SoundLocate {
 public:
-	SoundLocate();
+    SoundLocate();
 };
 
 #endif

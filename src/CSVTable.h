@@ -1,22 +1,23 @@
 #ifndef _CSVTABLE_H
 #define _CSVTABLE_H
 
-#include <vector>
-#include <iostream>
-#include <string>
 #include <fstream>
+#include <iostream>
 #include <sstream>
+#include <string>
+#include <vector>
 
 class CSVTable {
 public:
-	CSVTable(const char * filename, char seperator = ',');
+    CSVTable(const char * filename, char seperator = ',');
 
-	std::vector<std::vector<std::string>> getRows();
+    std::vector<std::vector<std::string>> getRows();
 
-	~CSVTable();
+    ~CSVTable();
+
 private:
-	std::string m_fileContent;
-	char m_seperator;
+    std::string m_fileContent;
+    char        m_seperator;
 };
 
 #endif

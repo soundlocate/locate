@@ -3,24 +3,24 @@
 
 #include <iostream>
 
-#include <cstdio>
 #include <cassert>
+#include <cstdio>
 #include <ctime>
 
 #include "util/types.h"
 
 class Logger {
 public:
-	Logger(const char * filename);
+    Logger(const char * filename);
 
-	Logger(FILE * file);
+    Logger(FILE * file);
 
-	int log(double freq, v3 pos);
+    int log(double freq, v3 pos);
 
-	~Logger();
+    ~Logger();
 
 private:
-	FILE * file;
+    FILE * file;
 };
 
 #endif

@@ -4,30 +4,32 @@
 #include <chrono>
 #include <vector>
 
-#include "util/types.h"
 #include "Position.h"
 #include "RingBuffer.h"
+#include "util/types.h"
 
 class FrequencyCache {
 public:
-	FrequencyCache(f64 frequency, u64 meanWindow, u64 maxKeep);
+    FrequencyCache(f64 frequency, u64 meanWindow, u64 maxKeep);
 
-	int add(Position p);
+    int add(Position p);
 
-	u64 deleteOlderThan(std::chrono::high_resolution_clock::duration d);
+    u64 deleteOlderThan(std::chrono::high_resolution_clock::duration d);
 
-	std::vector<Position> & getPositions();
+    std::vector<Position> & getPositions();
 
-	f64 getFreq();
+    f64 getFreq();
+
 private:
-	f64 freq;
+    f64 freq;
 
-	u64 meanWindow;
-	u64 maxKeep;
+    u64 meanWindow;
+    u64 maxKeep;
 
-	RingBuffer<std::chrono::time_point<std::chrono::high_resolution_clock>> timestamps;
-	RingBuffer<Position> lastPositions;
-	RingBuffer<Position> positions;
+    RingBuffer<std::chrono::time_point<std::chrono::high_resolution_clock>>
+                         timestamps;
+    RingBuffer<Position> lastPositions;
+    RingBuffer<Position> positions;
 };
 
 #endif

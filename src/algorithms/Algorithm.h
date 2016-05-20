@@ -3,13 +3,14 @@
 
 #include <vector>
 
+#include "../FFTPacket.h"
 #include "../Microfone.h"
 #include "../util/types.h"
-#include "../FFTPacket.h"
 
 class Algorithm {
 public:
-	virtual v3 locate(std::vector<Microfone> mics, FFTPacket::Sinus * p, v3 center) = 0;
+    virtual v3 locate(std::vector<Microfone> mics, FFTPacket::Sinus * p,
+                      v3 center) = 0;
 };
 
 #endif

@@ -1,78 +1,66 @@
+#include <chrono>
+#include <fstream>
 #include <iostream>
+#include <thread>
+#include <thread>
 #include <unordered_set>
 #include <vector>
-#include <fstream>
-#include <thread>
-#include <chrono>
-#include <thread>
 
 #include <cstdio>
 #include <ctime>
 
-#include "util/types.h"
 #include "util/constant.h"
+#include "util/types.h"
 
-#include "FFTStream.h"
-#include "Locator3D.h"
-#include "Microfone.h"
-#include "PositionClient.h"
-#include "WebsocketPositionClient.h"
 #include "CommandLineOptions.h"
 #include "Logger.h"
-#include "algorithms/Algorithm.h"
-#include "algorithms/PhaseOnly.h"
-#include "PostProcessor.h"
-#include "RingBuffer.h"
+#include "PositionClient.h"
 #include "ThreadedLocator.h"
+#include "WebsocketPositionClient.h"
 
 #include <QtCore/QCoreApplication>
 
-//ToDo(robin): implement log file
+// ToDo(robin): implement log file
 int main(int argc, char ** argv) {
-	CommandLineOptions options(argc, argv);
+    CommandLineOptions options(argc, argv);
 
-	// logger
-	Logger * log = nullptr;
-	if(options.log())
-		log = new Logger(options.logfilename());
+    // logger
+    Logger * log          = nullptr;
+    if(options.log()) log = new Logger(options.logfilename());
 
-	PositionClient posClient(options.guiIp().c_str(), options.guiPort());
+    PositionClient posClient(options.guiIp().c_str(), options.guiPort());
 
-	WebsocketPositionClient * wclient = nullptr;
+    WebsocketPositionClient * wclient = nullptr;
 
-	auto handle = std::thread([&]() {
-			QCoreApplication a(argc, argv);
+    auto handle = std::thread([&]() {
+        QCoreApplication a(argc, argv);
 
-			wclient = new WebsocketPositionClient(options.websocketPort(), true);
+        wclient = new WebsocketPositionClient(options.websocketPort(), true);
 
-			QTimer *timer = new QTimer();
-			QObject::connect(timer, SIGNAL(timeout()), wclient, SLOT(sendPackets()));
-			timer->start(100);
+        QTimer * timer = new QTimer();
+        QObject::connect(timer, SIGNAL(timeout()), wclient,
+                         SLOT(sendPackets()));
+        timer->start(100);
 
-			a.exec();
-		});
+        a.exec();
+    });
 
-	std::vector<v3> positionBuffer;
+    std::vector<v3>    positionBuffer;
+    ThreadedLocator<4> locator(options);
 
-	// u64 i = 0;
+    while(true) {
+        positionBuffer.clear();
 
-	ThreadedLocator<12> locator(options);
+        for(auto pos : locator.getPositions()) {
+            positionBuffer.push_back(pos.pos);
 
-	while(true) {
-		positionBuffer.clear();
+            if(wclient != nullptr) wclient->add(pos);
 
-		for(auto pos : locator.getPositions()) {
-			positionBuffer.push_back(pos.pos);
+            if(log) log->log(pos.frequency, pos.pos);
+        }
 
-			if(wclient != nullptr)
-				wclient->add(pos);
+        posClient.sendPositions(positionBuffer);
 
-			if(log)
-				log->log(pos.frequency, pos.pos);
-		}
-
-		posClient.sendPositions(positionBuffer);
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	}
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
 }

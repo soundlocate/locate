@@ -4,17 +4,19 @@
 #include <vector>
 
 #include "FFTPacket.h"
-#include "util/types.h"
 #include "Microfone.h"
+#include "util/types.h"
 
 class PositionRater {
 public:
-	PositionRater(std::vector<Microfone> m);
+    PositionRater(std::vector<Microfone> m);
 
-	// ToDo(robin): actually use the best position (-> use correct vs. located phase)
-	v3 bestPosition(std::vector<v3> & positions, FFTPacket::Sinus * p);
+    // ToDo(robin): actually use the best position (-> use correct vs. located
+    // phase)
+    v3 bestPosition(std::vector<v3> & positions, FFTPacket::Sinus * p);
+
 private:
-	std::vector<Microfone> mics;
+    std::vector<Microfone> mics;
 };
 
 #endif

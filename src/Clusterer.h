@@ -1,29 +1,30 @@
 #ifndef _CLUSTERER_H
 #define _CLUSTERER_H
 
-#include <vector>
 #include <deque>
-#include <limits>
 #include <iostream>
+#include <limits>
+#include <vector>
 
 #include <cassert>
 
-#include "util/types.h"
-#include "Position.h"
-#include "PositionCache.h"
 #include "Cluster.h"
 #include "Dissimilarity.h"
+#include "Position.h"
+#include "PositionCache.h"
+#include "util/types.h"
 
 class Clusterer {
 public:
-	Clusterer(Dissimilarity * d);
+    Clusterer(Dissimilarity * d);
 
-	std::vector<Position> cluster(PositionCache positions);
+    std::vector<Position> cluster(PositionCache positions);
+
 private:
-	Dissimilarity * dissimilarity;
+    Dissimilarity * dissimilarity;
 
-	std::deque<Cluster> pos;
-	std::vector<Position> clusters;
+    std::deque<Cluster>   pos;
+    std::vector<Position> clusters;
 };
 
 #endif

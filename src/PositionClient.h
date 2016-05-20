@@ -11,11 +11,12 @@
 
 class PositionClient {
 public:
-	PositionClient(const char * ip, unsigned short port);
+    PositionClient(const char * ip, unsigned short port);
 
-	int sendPositions(std::vector<v3> positions);
+    int sendPositions(std::vector<v3> positions);
+
 private:
-	sf::TcpSocket * server;
+    sf::TcpSocket * server;
 };
 
 #endif

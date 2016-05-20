@@ -3,9 +3,11 @@
 
 #include <cstring>
 
-#include <iostream>
-#include <thread>
 #include <chrono>
+#include <iostream>
+#include <mutex>
+#include <thread>
+#include <thread>
 
 #include <SFML/Network.hpp>
 
@@ -14,39 +16,35 @@
 
 class FFTStream : public std::iterator<std::input_iterator_tag, FFTPacket> {
 public:
-	FFTStream(const char * ip, unsigned short port);
+    FFTStream(const char * ip, unsigned short port);
 
-	unsigned int & numMics();;
+    unsigned int & numMics();
 
-	FFTStream& operator++();
+    FFTStream & operator++();
 
-	bool operator==(const FFTStream& rhs);
+    bool operator==(const FFTStream & rhs);
 
-	bool operator!=(const FFTStream& rhs);
+    bool operator!=(const FFTStream & rhs);
 
-	FFTPacket::Sinus * operator*();
+    FFTPacket::Sinus * operator*();
 
-    FFTStream& begin();
+    FFTStream & begin();
 
-    FFTStream& end();
+    FFTStream & end();
 
-	enum FFTSteamStatus {
-		disconnected,
-		connected,
-		eos
-	};
+    enum FFTSteamStatus { disconnected, connected, eos };
 
 private:
-	FFTStream(FFTSteamStatus newStatus);
-	DoubleRingBuffer<FFTPacket::Sinus> * buffer;
-	std::thread * handle;
+    FFTStream(FFTSteamStatus newStatus);
+    DoubleRingBuffer<FFTPacket::Sinus> * buffer;
+    std::thread *                        handle;
 
-	std::size_t to_receive_size;
+    std::size_t to_receive_size;
 
-	sf::TcpSocket * server;
-	unsigned int numMic;
-	FFTPacket::Sinus * currentPacket;
-	FFTSteamStatus status = disconnected;
+    sf::TcpSocket *    server;
+    unsigned int       numMic;
+    FFTPacket::Sinus * currentPacket;
+    FFTSteamStatus     status = disconnected;
 };
 
 #endif
