@@ -20,6 +20,11 @@
 
 #include <QtCore/QCoreApplication>
 
+// ToDo(robin): is it worth to rebuild fftstream + threaded locator eventbased
+// -> in FFTStream call the ThreadedLocator callback
+// callback: deque (own non resizing version...) of available locators, use the
+// first available, if non available drop the packet...
+
 // ToDo(robin): implement log file
 int main(int argc, char ** argv) {
     CommandLineOptions options(argc, argv);
@@ -46,7 +51,7 @@ int main(int argc, char ** argv) {
     });
 
     std::vector<v3>    positionBuffer;
-    ThreadedLocator<4> locator(options);
+    ThreadedLocator<1> locator(options);
 
     while(true) {
         positionBuffer.clear();

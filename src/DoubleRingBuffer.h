@@ -1,21 +1,30 @@
 #ifndef _DOUBLERINGBUFFER_H
 #define _DOUBLERINGBUFFER_H
 
+#include <condition_variable>
 #include <cstring>
+#include <iostream>
+#include <mutex>
 
 #include "util/types.h"
 
 // ToDo(robin): implement the big five
+// ToDo(robin): is there something that can be done to prevent data currently
+// processed getting overwritten?
+
 // A ringbuffer for dynamic size arrays
 template <typename T>
 class DoubleRingBuffer {
 private:
-    T *          buffer;
-    volatile u64 pushIndex = 0;
-    volatile u64 popIndex  = 0;
-    u64          size;
-    u64          arraySize;
-    u64          typeSize;
+    T *                     buffer;
+    volatile u64            pushIndex = 0;
+    volatile u64            popIndex  = 0;
+    u64                     size;
+    u64                     arraySize;
+    u64                     typeSize;
+    std::mutex              lock;
+    std::mutex              popLock;
+    std::condition_variable elemAvail;
 
 public:
     DoubleRingBuffer() {}
@@ -31,6 +40,7 @@ public:
         std::memcpy(buffer[(pushIndex % size) * arraySize], &value, typeSize);
         pushIndex++;
 
+        elemAvail.notify_one();
         return 0;
     }
 
@@ -38,10 +48,17 @@ public:
     T * pushPtr() { return &buffer[(pushIndex % size) * arraySize]; }
 
     // marks that the data has been read and the push index should increment
-    void pushDone() { pushIndex++; }
+    void pushDone() {
+        pushIndex++;
+        elemAvail.notify_one();
+    }
 
     T * popPtr() {
-        while(pushIndex <= popIndex) {}
+        std::lock_guard<std::mutex> lock_guard(popLock);
+
+        std::unique_lock<std::mutex> lk(lock);
+
+        while(pushIndex <= popIndex) elemAvail.wait(lk);
 
         return &buffer[(popIndex++ % size) * arraySize];
     }
@@ -50,8 +67,11 @@ public:
     T pop() {
         // Note(robin): on x86 native size reads are atomic
 
+        std::lock_guard<std::mutex> lock_guard(popLock);
+
         // wait for data
-        while(pushIndex <= popIndex) {}
+        std::unique_lock<std::mutex> lk(lock);
+        while(pushIndex <= popIndex) elemAvail.wait(lk);
 
         return buffer[(popIndex++ % size) * arraySize];
     }

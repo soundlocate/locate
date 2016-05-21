@@ -16,35 +16,37 @@ class CommandLineOptions {
 public:
     CommandLineOptions(int argc, char ** argv);
 
-    std::string fftIp() const;
+    std::string fftIp() const { return args.fftIp; }
 
-    u16 fftPort() const;
+    u16 fftPort() const { return args.fftPort; }
 
-    std::string guiIp() const;
+    std::string guiIp() const { return args.guiIp; }
 
-    u16 guiPort() const;
+    u16 guiPort() const { return args.guiPort; }
 
-    u16 websocketPort() const;
+    u16 websocketPort() const { return args.websocketPort; }
 
-    f64 accuracy() const;
+    f64 accuracy() const { return args.accuracy; }
 
-    f64 clusterSize() const;
+    f64 clusterSize() const { return args.clusterSize; }
 
-    u64 maxKeep() const;
+    u64 maxKeep() const { return args.maxKeep; }
 
-    u64 meanWindow() const;
+    u64 meanWindow() const { return args.meanWindow; }
 
-    f64 keepTime() const;
+    f64 keepTime() const { return args.keepTime; }
 
-    u64 log() const;
+    u64 log() const { return args.log; }
 
-    char * logfilename() const;
+    char * logfilename() const { return args.logfilename; }
 
-    u64 micCount() const;
+    u64 micCount() const { return args.micCount; }
 
-    f64 * mics() const;
+    f64 * mics() const { return args.mics; }
 
-    u64 dissimilarityFunction() const;
+    u64 dissimilarityFunction() const {
+        return args.dissimilarity;
+    }
 
 private:
     // documentation of the program

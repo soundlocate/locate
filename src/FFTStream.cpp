@@ -24,7 +24,7 @@ FFTStream::FFTStream(const char * ip, unsigned short port) {
     to_receive_size = numMic * 3 * sizeof(double);
 
     // ToDo(robin): config option of size
-    buffer = new DoubleRingBuffer<FFTPacket::Sinus>(numMic, 65536);
+    buffer = new DoubleRingBuffer<FFTPacket::Sinus>(numMic, 2048);
 
     // start receiving
     handle = new std::thread([&]() {
@@ -45,7 +45,7 @@ FFTStream::FFTStream(const char * ip, unsigned short port) {
                     s = server->receive(&buf[to_receive_size - toReceive],
                                         toReceive, receivedSize);
 
-                    if(s != sf::Socket::Done) {
+                    if(s == sf::Socket::Disconnected) {
                         std::cout << "fftserver disconnected" << std::endl;
                         status = eos; // the server closed
 
