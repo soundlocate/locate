@@ -36,7 +36,8 @@ Locator3D::Locator3D(std::vector<Microfone>   microfones,
 v3 Locator3D::locate(FFTPacket::Sinus * packet) {
     std::vector<v3> positions;
 
-    if(packet[0].freq > maxFreq) return v3(f64Max, f64Max, f64Max);
+	// when using allcases this should not get used
+    // if(packet[0].freq > maxFreq) return v3(f64Max, f64Max, f64Max);
 
     for(auto a : algorithms) {
         positions.push_back(a->locate(mics, packet, center));

@@ -44,9 +44,9 @@ public:
 
     f64 * mics() const { return args.mics; }
 
-    u64 dissimilarityFunction() const {
-        return args.dissimilarity;
-    }
+    u64 dissimilarityFunction() const { return args.dissimilarity; }
+
+	std::vector<u16> algos() const { return args.algorithms; }
 
 private:
     // documentation of the program
@@ -65,9 +65,9 @@ private:
     // "-l " + logfile : "", "-p " + positionFile)
 
     // ToDo(robin) : support multiple algorithms set from commandline
-    // supported options (no custom options for now)
+    // supported options (no custom options for now), 3 -> AllCases
     struct argp_option options[10] = {
-        {"dataAlgorithms", 'd', "STRING", 0, "only PhaseOnly atm", 0},
+        {"dataAlgorithms", 'd', "STRING", 0, "one of [PhaseOnly, AllCases]", 0},
         {"accuracy", 'a', "DOUBLE", 0, "accuracy of numeric solution", 0},
         {"clusterSize", 'c', "DOUBLE", 0, "max cluster size", 0},
         {"keep", 'k', "COUNT", 0, "maximum number of positions to keep", 0},
@@ -91,7 +91,7 @@ private:
         u16 websocketPort;
 
         std::vector<u16> algorithms = {0};
-        // 0 -> phaseonly, 1 -> phaseandvelocity, 2-> phaseandamplitdue
+        // 0 -> phaseonly, 1 -> phaseandvelocity, 2-> phaseandamplitdue, 3 -> AllCases
         u64 dissimilarity = 0; // 0 -> meanDirection, 1 -> meanDist
         f64 accuracy      = 0.01;
         f64 clusterSize   = 0.1;
@@ -179,7 +179,9 @@ private:
                 arguments->algorithms.push_back(1);
             } else if(s == "PhaseAndAmplitude") {
                 arguments->algorithms.push_back(2);
-            } else {
+            } else if(s == "AllCases") {
+				arguments->algorithms.push_back(3);
+			} else {
                 std::cerr << "invalid locate algorithm " << arg << std::endl;
                 argp_usage(state);
             }

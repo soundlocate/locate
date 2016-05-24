@@ -12,6 +12,7 @@
 #include "Microfone.h"
 #include "Position.h"
 #include "PostProcessor.h"
+#include "algorithms/AllCases.h"
 #include "algorithms/PhaseOnly.h"
 #include "util/types.h"
 
@@ -47,6 +48,26 @@ public:
             locators.push_back(new std::thread([&]() {
                 // locate algorithms
                 std::vector<Algorithm *> algorithms;
+                for(auto algorithm : options.algos()) {
+                    switch(algorithm) {
+                    case 0: {
+                        algorithms.push_back((Algorithm *)new PhaseOnly(
+                            options.micCount(), options.accuracy()));
+                        break;
+                    }
+                    case 3: {
+                        algorithms.push_back((Algorithm *)new AllCases(
+                            mics, options.micCount(), options.accuracy()));
+                        break;
+                    }
+                    default: {
+                        std::cerr << "unhandled algorithm " << algorithm
+                                  << std::endl;
+                        std::exit(EXIT_FAILURE);
+                    }
+                    }
+                }
+
                 algorithms.push_back((Algorithm *)new PhaseOnly(
                     options.micCount(), options.accuracy()));
 
