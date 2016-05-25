@@ -15,6 +15,8 @@ PositionClient::PositionClient(const char * ip, unsigned short port) {
 int PositionClient::sendPositions(std::vector<v3> positions) {
     u32 size = positions.size();
 
+	if(size == 0) return 0;
+
     if(size != 1) {
         server->send(&size, sizeof(u32));
         server->send(positions.data(), sizeof(v3) * size);
