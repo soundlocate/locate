@@ -6,7 +6,6 @@ PhaseOnly::PhaseOnly(u64 numMics, f64 accuracy)
     singular = (f64 *)malloc(sizeof(f64) * (numMics - 1));
     matrix   = (f64 *)malloc(sizeof(f64) * (3 * numMics));
     x        = (f64 *)malloc(sizeof(f64) * numMics);
-    r        = (f64 *)malloc(sizeof(f64) * numMics);
 }
 
 v3 PhaseOnly::locate(std::vector<Microfone> mics, FFTPacket::Sinus * p,
@@ -87,5 +86,4 @@ PhaseOnly::~PhaseOnly() {
     free(singular);
     free(matrix);
     free(x);
-    free(r);
 }

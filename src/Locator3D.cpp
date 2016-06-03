@@ -37,7 +37,9 @@ v3 Locator3D::locate(FFTPacket::Sinus * packet) {
     std::vector<v3> positions;
 
 	// when using allcases this should not get used
+	// ToDo(robin): move this to individual algorithms
     // if(packet[0].freq > maxFreq) return v3(f64Max, f64Max, f64Max);
+	if(packet[0].freq > maxFreq) return v3(f64Max, f64Max, f64Max);
 
     for(auto a : algorithms) {
         positions.push_back(a->locate(mics, packet, center));

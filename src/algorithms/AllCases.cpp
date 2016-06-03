@@ -14,11 +14,12 @@ AllCases::AllCases(std::vector<Microfone> mics, u64 numMics, f64 accuracy)
 		maxCases += (u64) ratio + 1;
 	}
 
+	std::cout << "maximum possible different equations: " << maxCases <<  std::endl;
+
     target   = (f64 *)malloc(sizeof(f64) * (maxCases - 1));
     singular = (f64 *)malloc(sizeof(f64) * (maxCases - 1));
     matrix   = (f64 *)malloc(sizeof(f64) * (3 * maxCases));
-    x        = (f64 *)malloc(sizeof(f64) * maxCases);
-    r        = (f64 *)malloc(sizeof(f64) * maxCases);
+    x        = (f64 *)malloc(sizeof(f64) * 3);
 }
 
 v3 AllCases::locate(std::vector<Microfone> mics, FFTPacket::Sinus * p,
@@ -100,5 +101,4 @@ AllCases::~AllCases() {
     free(singular);
     free(matrix);
     free(x);
-    free(r);
 }
